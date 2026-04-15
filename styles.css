@@ -53,7 +53,7 @@
     --gradient-velocity: linear-gradient(135deg, #0068B7 0%, #00A6E8 50%, #00AEEF 100%);
     --gradient-brand: linear-gradient(135deg, #003366 0%, #004A87 100%);
     --gradient-glow: linear-gradient(135deg, #FCE4EC 0%, #C6E7FF 100%);
-    --gradient-life: linear-gradient(135deg, #E91E63 0%, #FF4081 100%);
+    --gradient-life: linear-gradient(135deg, #0068B7 0%, #00A6E8 100%);
     --gradient-sidebar: linear-gradient(180deg, #0A1628 0%, #0D2137 50%, #0E2A45 100%);
 
     /* Transitions */
@@ -432,14 +432,14 @@ table {
 }
 
 .btn-accent {
-    background: var(--gradient-life);
+    background: var(--gradient-velocity);
     color: white;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 104, 183, 0.2);
 }
 
 .btn-accent:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 104, 183, 0.3);
 }
 
 .btn-ghost {
