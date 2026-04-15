@@ -185,42 +185,69 @@
 
                 <!-- ===== DASHBOARD ===== -->
                 <div id="page-dashboard" class="page active">
+                    <!-- Welcome Hero — Today's Agenda -->
                     <div class="welcome-hero" id="welcomeHero">
-                        <h2 id="welcomeGreeting">Xin chào! 👋</h2>
-                        <p id="welcomeDate">Hôm nay là...</p>
+                        <div class="welcome-hero-content">
+                            <div class="welcome-hero-left">
+                                <h2 id="welcomeGreeting">Xin chào! 👋</h2>
+                                <p id="welcomeDate">Hôm nay là...</p>
+                            </div>
+                            <div class="welcome-hero-agenda">
+                                <div class="agenda-item" onclick="navigateTo('leads')">
+                                    <span class="agenda-num" id="agendaNew">0</span>
+                                    <span class="agenda-text">DN mới<br>cần liên hệ</span>
+                                </div>
+                                <div class="agenda-divider"></div>
+                                <div class="agenda-item" onclick="navigateTo('contracts')">
+                                    <span class="agenda-num" id="agendaContracts">0</span>
+                                    <span class="agenda-text">Hợp đồng<br>chờ xử lý</span>
+                                </div>
+                                <div class="agenda-divider"></div>
+                                <div class="agenda-item" onclick="navigateTo('leads')">
+                                    <span class="agenda-num" id="agendaFollowup">0</span>
+                                    <span class="agenda-text">DN cần<br>theo dõi</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- KPI Cards — Clear SME Metrics -->
                     <div class="summary-cards">
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="navigateTo('leads')">
                             <div class="summary-icon blue">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                    <path d="M3 21h18" />
+                                    <path d="M9 8h1" />
+                                    <path d="M9 12h1" />
+                                    <path d="M9 16h1" />
+                                    <path d="M14 8h1" />
+                                    <path d="M14 12h1" />
+                                    <path d="M14 16h1" />
+                                    <rect x="5" y="2" width="14" height="19" rx="2" />
                                 </svg>
                             </div>
                             <div class="summary-data">
                                 <span class="summary-value" id="totalLeads">0</span>
-                                <span class="summary-label">Tổng KHTN</span>
+                                <span class="summary-label">Doanh nghiệp theo dõi</span>
+                                <span class="summary-desc">Tổng số DN tiềm năng</span>
                             </div>
                         </div>
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="navigateTo('leads')">
                             <div class="summary-icon sky">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <line x1="19" y1="8" x2="19" y2="14" />
-                                    <line x1="22" y1="11" x2="16" y2="11" />
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                    <polyline points="22 4 12 14.01 9 11.01" />
                                 </svg>
                             </div>
                             <div class="summary-data">
                                 <span class="summary-value" id="newLeads">0</span>
-                                <span class="summary-label">KHTN Mới</span>
+                                <span class="summary-label">DN mới tiếp nhận</span>
+                                <span class="summary-desc">Chưa liên hệ lần đầu</span>
                             </div>
                         </div>
-                        <div class="summary-card">
+                        <div class="summary-card" onclick="navigateTo('contracts')">
                             <div class="summary-icon green">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -231,24 +258,26 @@
                             </div>
                             <div class="summary-data">
                                 <span class="summary-value" id="activeContracts">0</span>
-                                <span class="summary-label">HĐ đang xử lý</span>
+                                <span class="summary-label">Hợp đồng đang xử lý</span>
+                                <span class="summary-desc">Chờ duyệt / ký kết</span>
                             </div>
                         </div>
                         <div class="summary-card">
                             <div class="summary-icon accent">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
-                                    <line x1="12" y1="1" x2="12" y2="23" />
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                                 </svg>
                             </div>
                             <div class="summary-data">
                                 <span class="summary-value" id="monthRevenue">₫0</span>
-                                <span class="summary-label">Doanh thu tháng</span>
+                                <span class="summary-label">Phí bảo hiểm tháng</span>
+                                <span class="summary-desc">Tổng phí HĐ đã ghi nhận</span>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Quick Actions — B2B Sales -->
                     <div class="quick-actions">
                         <button class="btn btn-primary"
                             onclick="navigateTo('leads'); setTimeout(() => openAddLead(), 100)">
@@ -257,7 +286,7 @@
                                 <line x1="12" y1="5" x2="12" y2="19" />
                                 <line x1="5" y1="12" x2="19" y2="12" />
                             </svg>
-                            Thêm KHTN
+                            Thêm doanh nghiệp
                         </button>
                         <button class="btn btn-outline"
                             onclick="navigateTo('contracts'); setTimeout(() => openNewContract(), 100)">
@@ -268,38 +297,49 @@
                             </svg>
                             Tạo hợp đồng
                         </button>
+                        <button class="btn btn-outline" onclick="navigateTo('leads')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            Tìm doanh nghiệp
+                        </button>
                     </div>
 
+                    <!-- Dashboard Grid — Pipeline + News -->
                     <div class="dashboard-grid">
+                        <div class="card pipeline-card">
+                            <div class="card-header">
+                                <h3>📊 Pipeline doanh nghiệp</h3>
+                                <span class="card-subtitle">Tiến trình chăm sóc khách hàng</span>
+                            </div>
+                            <div class="pipeline-chart" id="pipelineChart"></div>
+                        </div>
                         <div class="card news-card">
                             <div class="card-header">
-                                <h3>Tin tức & Sự kiện</h3>
+                                <h3>📰 Tin tức & Sự kiện</h3>
                                 <a class="link" onclick="navigateTo('news')">Xem tất cả</a>
                             </div>
                             <div class="news-list" id="dashNewsList"></div>
                         </div>
-                        <div class="card pipeline-card">
-                            <div class="card-header">
-                                <h3>Pipeline KHTN</h3>
-                            </div>
-                            <div class="pipeline-chart" id="pipelineChart"></div>
-                        </div>
                     </div>
 
+                    <!-- Recent Leads — Enterprise Focus -->
                     <div class="card recent-card">
                         <div class="card-header">
-                            <h3>KHTN gần đây</h3>
+                            <h3>🏢 Doanh nghiệp mới cập nhật</h3>
                             <a class="link" onclick="navigateTo('leads')">Xem tất cả</a>
                         </div>
                         <div class="recent-table-wrap">
                             <table class="data-table" id="recentLeadsTable">
                                 <thead>
                                     <tr>
-                                        <th>Mã KH</th>
+                                        <th>Mã DN</th>
                                         <th>Tên doanh nghiệp</th>
-                                        <th>Người đại diện</th>
+                                        <th>Người liên hệ</th>
                                         <th>Trạng thái</th>
-                                        <th>Ngày tạo</th>
+                                        <th>Ngày cập nhật</th>
                                         <th></th>
                                     </tr>
                                 </thead>

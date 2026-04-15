@@ -71,10 +71,19 @@
     // ===== DASHBOARD =====
     function updateDashboard() {
         document.getElementById('totalLeads').textContent = leads.length;
-        document.getElementById('newLeads').textContent = leads.filter(l => l.status === 'Mới').length;
-        document.getElementById('activeContracts').textContent = contracts.filter(c => c.status !== 'Đã phát hành').length;
+        const newCount = leads.filter(l => l.status === 'Mới').length;
+        document.getElementById('newLeads').textContent = newCount;
+        const pendingContracts = contracts.filter(c => c.status !== 'Đã phát hành').length;
+        document.getElementById('activeContracts').textContent = pendingContracts;
         const rev = contracts.reduce((s, c) => s + c.premium, 0);
         document.getElementById('monthRevenue').textContent = fmt(rev);
+        // Agenda counters
+        const agNew = document.getElementById('agendaNew');
+        if (agNew) agNew.textContent = newCount;
+        const agContracts = document.getElementById('agendaContracts');
+        if (agContracts) agContracts.textContent = pendingContracts;
+        const agFollowup = document.getElementById('agendaFollowup');
+        if (agFollowup) agFollowup.textContent = leads.filter(l => ['Đang liên hệ', 'Quan tâm', 'Đang đàm phán'].includes(l.status)).length;
     }
 
     function updateWelcomeHero() {
