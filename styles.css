@@ -50,7 +50,7 @@
     --shadow-float: 0 16px 40px rgba(0, 30, 64, 0.12);
 
     /* Gradients */
-    --gradient-velocity: linear-gradient(135deg, #E91E63 0%, #003366 50%, #00AEEF 100%);
+    --gradient-velocity: linear-gradient(135deg, #0068B7 0%, #00A6E8 50%, #00AEEF 100%);
     --gradient-brand: linear-gradient(135deg, #003366 0%, #004A87 100%);
     --gradient-glow: linear-gradient(135deg, #FCE4EC 0%, #C6E7FF 100%);
     --gradient-life: linear-gradient(135deg, #E91E63 0%, #FF4081 100%);
@@ -169,10 +169,10 @@ table {
     width: 100%;
     height: 100%;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 60px;
-    background: linear-gradient(135deg, rgba(0, 51, 102, 0.75) 0%, rgba(0, 51, 102, 0.55) 50%, rgba(0, 174, 239, 0.4) 100%);
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 40px;
+    background: linear-gradient(0deg, rgba(0, 51, 102, 0.85) 0%, rgba(0, 51, 102, 0.3) 40%, transparent 70%);
 }
 
 .login-brand::before {
@@ -391,14 +391,14 @@ table {
 }
 
 .btn-primary {
-    background: var(--gradient-life);
+    background: var(--gradient-velocity);
     color: white;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 104, 183, 0.25);
 }
 
 .btn-primary:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 104, 183, 0.3);
 }
 
 .btn-login {
@@ -407,12 +407,12 @@ table {
     font-weight: 600;
     font-size: 15px;
     letter-spacing: 0.02em;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 104, 183, 0.25);
 }
 
 .btn-login:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.35);
+    box-shadow: 0 8px 24px rgba(0, 104, 183, 0.35);
 }
 
 .btn-primary:active {
@@ -681,7 +681,7 @@ table {
 .nav-item.active {
     background: var(--gradient-velocity);
     color: white;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 104, 183, 0.25);
 }
 
 .nav-item.active svg {
