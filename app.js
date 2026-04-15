@@ -353,9 +353,11 @@
         closeModal();
         renderLeadsTable();
         updateDashboard();
+        updateWelcomeHero();
         renderPipeline();
         renderRecentLeads();
         updateLeadBadge();
+        if (!editId) navigateTo('leads');
         return false;
     };
 
@@ -405,6 +407,7 @@
         renderPipeline();
         renderRecentLeads();
         updateLeadBadge();
+        updateWelcomeHero();
         showToast('Đã cập nhật trạng thái', 'success');
         return false;
     };
