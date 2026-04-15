@@ -2087,8 +2087,29 @@ table {
 }
 
 @media (max-width: 768px) {
+
+    /* ===== Global overflow prevention ===== */
+    body,
+    .main-content,
+    .page-content {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    .page-content {
+        padding: 16px;
+    }
+
+    /* ===== Sidebar mobile ===== */
     .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 260px;
+        height: 100vh;
+        z-index: 1000;
         transform: translateX(-100%);
+        transition: transform 0.3s var(--ease-smooth);
     }
 
     .sidebar.open {
@@ -2104,34 +2125,92 @@ table {
         display: flex;
     }
 
-    .summary-cards {
-        grid-template-columns: 1fr 1fr;
+    /* ===== Header ===== */
+    .app-header,
+    .main-header {
+        padding: 12px 16px;
     }
 
+    .header-right {
+        gap: 8px;
+    }
+
+    .header-right .user-name {
+        display: none;
+    }
+
+    /* ===== Login page ===== */
     .login-page {
         flex-direction: column;
     }
 
     .login-brand {
         flex: none;
-        padding: 48px 24px;
+        min-height: unset;
+        height: auto;
+        padding: 32px 20px 24px;
+    }
+
+    .login-brand-overlay {
+        padding: 32px 20px 24px;
+    }
+
+    .login-logo-brand {
+        margin-bottom: 20px;
     }
 
     .login-brand-title {
-        font-size: 28px;
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    .login-brand-desc {
+        font-size: 13px;
+        margin-bottom: 24px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 
     .login-brand-stats {
-        gap: 28px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .login-brand-stats .stat-number {
+        font-size: 22px;
+    }
+
+    .login-brand-stats .stat-label {
+        font-size: 11px;
     }
 
     .login-form-side {
         width: 100%;
         max-width: 100%;
-        padding: 24px;
+        padding: 24px 20px;
     }
 
-    /* Welcome hero */
+    .login-title {
+        font-size: 24px;
+    }
+
+    /* ===== Welcome Hero ===== */
+    .welcome-hero {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .welcome-hero h2 {
+        font-size: 18px;
+    }
+
+    .welcome-hero p {
+        font-size: 13px;
+    }
+
     .welcome-hero-content {
         flex-direction: column;
         gap: 16px;
@@ -2139,27 +2218,126 @@ table {
 
     .welcome-hero-agenda {
         width: 100%;
-        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: flex-start;
     }
 
-    /* Data table responsive */
+    .agenda-item {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .agenda-divider {
+        display: none;
+    }
+
+    .agenda-number {
+        font-size: 20px;
+    }
+
+    .agenda-label {
+        font-size: 11px;
+    }
+
+    /* ===== Summary Cards ===== */
+    .summary-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .summary-card {
+        padding: 16px;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .summary-card .card-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        flex-shrink: 0;
+    }
+
+    .summary-card .card-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .card-info {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .card-info .card-value {
+        font-size: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-info .card-label {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-info .card-desc {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* ===== Quick Actions ===== */
+    .quick-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .quick-actions .btn {
+        font-size: 13px;
+        padding: 10px 14px;
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    /* ===== Dashboard Grid ===== */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* ===== Pipeline ===== */
+    .pipeline-legend {
+        gap: 8px;
+    }
+
+    .pipeline-legend-item {
+        font-size: 11px;
+    }
+
+    /* ===== Data Table ===== */
+    .table-container,
+    .data-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .data-table {
         font-size: 12px;
+        min-width: 600px;
     }
 
     .data-table th,
     .data-table td {
         padding: 10px 8px;
+        white-space: nowrap;
     }
 
-    .modal-form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-
+    /* ===== News ===== */
     .news-grid {
         grid-template-columns: 1fr;
     }
@@ -2172,6 +2350,23 @@ table {
         min-height: 160px;
     }
 
+    .news-item-title,
+    .news-card h4 {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* ===== Modal ===== */
+    .modal-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* ===== Wizard ===== */
     .product-cards {
         grid-template-columns: 1fr;
     }
@@ -2183,17 +2378,24 @@ table {
     .step-label {
         display: none;
     }
-
-    .page-content {
-        padding: 16px;
-    }
 }
 
 @media (max-width: 480px) {
+
+    /* Single column cards */
     .summary-cards {
         grid-template-columns: 1fr;
     }
 
+    .summary-card {
+        padding: 14px;
+    }
+
+    .card-info .card-value {
+        font-size: 20px;
+    }
+
+    /* Page toolbar */
     .page-toolbar {
         flex-direction: column;
         align-items: stretch;
@@ -2207,26 +2409,63 @@ table {
         min-width: 100%;
     }
 
+    /* Quick actions stack */
+    .quick-actions {
+        flex-direction: column;
+    }
+
+    .quick-actions .btn {
+        width: 100%;
+        min-width: unset;
+    }
+
     /* Touch-friendly buttons */
     .btn {
         min-height: 44px;
         padding: 12px 20px;
     }
 
-    /* Full-width cards */
+    /* Cards */
     .card {
         border-radius: var(--radius);
     }
 
+    /* Login */
     .login-brand {
-        height: 220px;
+        padding: 24px 16px 16px;
     }
 
     .login-brand-title {
-        font-size: 22px;
+        font-size: 20px;
+    }
+
+    .login-brand-stats .stat-number {
+        font-size: 18px;
+    }
+
+    .login-form-side {
+        padding: 20px 16px;
+    }
+
+    /* Welcome hero */
+    .welcome-hero {
+        padding: 16px;
     }
 
     .welcome-hero h2 {
-        font-size: 20px;
+        font-size: 16px;
+    }
+
+    .welcome-hero-agenda {
+        gap: 8px;
+    }
+
+    .agenda-number {
+        font-size: 18px;
+    }
+
+    /* Header */
+    .page-title {
+        font-size: 16px;
     }
 }
