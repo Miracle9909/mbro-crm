@@ -65,7 +65,10 @@
     };
 
     window.toggleSidebar = function () {
-        document.getElementById('sidebar').classList.toggle('open');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        if (overlay) overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
     };
 
     // ===== DASHBOARD =====

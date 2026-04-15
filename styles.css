@@ -7,26 +7,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    /* Brand Palette — MB Life */
-    --mb-primary: #003366;
-    --mb-primary-dark: #00254D;
-    --mb-primary-light: #D5E3FF;
-    --mb-accent: #E91E63;
-    --mb-accent-light: #FCE4EC;
-    --mb-pink: #E91E63;
-    --mb-pink-light: #FCE4EC;
-    --mb-rose: #FF4081;
+    /* Brand Palette — MB Life MVP Reference */
+    --mb-primary: #2547D0;
+    --mb-primary-dark: #1A33A3;
+    --mb-primary-light: #E8EDFA;
+    --mb-accent: #D02547;
+    --mb-accent-light: #FCEAEE;
+    --mb-pink: #D02547;
+    --mb-pink-light: #FCEAEE;
+    --mb-rose: #E83E6A;
     --mb-cyan: #00AEEF;
-    --mb-cyan-light: #C6E7FF;
+    --mb-cyan-light: #E1F5FE;
 
-    /* Surface System — Layered Glass */
-    --mb-bg: #F0F4F8;
-    --mb-card: #FFFFFF;
-    --mb-surface-dim: #E4E9ED;
-    --mb-surface-container: #EAEEF2;
-    --mb-text: #171C1F;
-    --mb-text-secondary: #43474F;
-    --mb-muted: #737780;
+    /* Surface System — Premium Glass */
+    --mb-bg: #F8FAFC;
+    --mb-card: rgba(255, 255, 255, 0.92);
+    --mb-surface-dim: #E4E9F0;
+    --mb-surface-container: #F1F4F9;
+    --mb-text: #0F172A;
+    --mb-text-secondary: #334155;
+    --mb-muted: #64748B;
 
     /* Status */
     --mb-success: #16A34A;
@@ -37,24 +37,24 @@
     /* Layout */
     --sidebar-w: 260px;
     --header-h: 68px;
-    --radius: 16px;
-    --radius-lg: 24px;
+    --radius: 20px;
+    --radius-lg: 28px;
     --radius-pill: 100px;
-    --radius-sm: 12px;
+    --radius-sm: 14px;
 
-    /* Ambient Shadows — Primary-tinted, never pure black */
-    --shadow-sm: 0 2px 8px rgba(0, 30, 64, 0.04);
-    --shadow: 0 4px 16px rgba(0, 30, 64, 0.06);
-    --shadow-md: 0 8px 24px rgba(0, 30, 64, 0.08);
-    --shadow-lg: 0 24px 48px rgba(0, 30, 64, 0.10);
-    --shadow-float: 0 16px 40px rgba(0, 30, 64, 0.12);
+    /* Premium Shadows — Soft diffused */
+    --shadow-sm: 0 2px 12px rgba(37, 71, 208, 0.04);
+    --shadow: 0 4px 20px rgba(37, 71, 208, 0.06);
+    --shadow-md: 0 8px 30px rgba(37, 71, 208, 0.08);
+    --shadow-lg: 0 14px 40px rgba(37, 71, 208, 0.10);
+    --shadow-float: 0 20px 50px rgba(37, 71, 208, 0.12);
 
-    /* Gradients — MB Life Pink */
-    --gradient-velocity: linear-gradient(135deg, #E91E63 0%, #FF4081 50%, #F48FB1 100%);
-    --gradient-brand: linear-gradient(135deg, #AD1457 0%, #C2185B 100%);
-    --gradient-glow: linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 50%, #E1F5FE 100%);
-    --gradient-life: linear-gradient(135deg, #E91E63 0%, #FF4081 100%);
-    --gradient-sidebar: linear-gradient(180deg, #0A1628 0%, #0D2137 50%, #0E2A45 100%);
+    /* Gradients — MVP Blue→Pink */
+    --gradient-velocity: linear-gradient(135deg, #2547D0 0%, #6C3AED 50%, #D02547 100%);
+    --gradient-brand: linear-gradient(135deg, #2547D0 0%, #D02547 100%);
+    --gradient-glow: linear-gradient(135deg, #E8EDFA 0%, #FCEAEE 50%, #E1F5FE 100%);
+    --gradient-life: linear-gradient(135deg, #2547D0 0%, #6C3AED 100%);
+    --gradient-sidebar: linear-gradient(180deg, #0B1124 0%, #111C3D 50%, #162152 100%);
 
     /* Transitions */
     --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -393,12 +393,12 @@ table {
 .btn-primary {
     background: var(--gradient-velocity);
     color: white;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.25);
+    box-shadow: 0 4px 20px rgba(37, 71, 208, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.35);
+    box-shadow: 0 8px 30px rgba(37, 71, 208, 0.4);
 }
 
 .btn-login {
@@ -407,12 +407,12 @@ table {
     font-weight: 600;
     font-size: 15px;
     letter-spacing: 0.02em;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.3);
+    box-shadow: 0 4px 20px rgba(37, 71, 208, 0.3);
 }
 
 .btn-login:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.4);
+    box-shadow: 0 8px 30px rgba(37, 71, 208, 0.4);
 }
 
 .btn-primary:active {
@@ -1092,6 +1092,9 @@ table {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .card-header {
@@ -2123,8 +2126,30 @@ table {
     }
 
     .login-form-side {
-        flex: none;
-        padding: 48px 24px;
+        width: 100%;
+        max-width: 100%;
+        padding: 24px;
+    }
+
+    /* Welcome hero */
+    .welcome-hero-content {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .welcome-hero-agenda {
+        width: 100%;
+        justify-content: space-around;
+    }
+
+    /* Data table responsive */
+    .data-table {
+        font-size: 12px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 10px 8px;
     }
 
     .modal-form-row {
@@ -2145,10 +2170,6 @@ table {
 
     .news-featured-img {
         min-height: 160px;
-    }
-
-    .search-box {
-        min-width: 200px;
     }
 
     .product-cards {
@@ -2184,5 +2205,28 @@ table {
 
     .search-box {
         min-width: 100%;
+    }
+
+    /* Touch-friendly buttons */
+    .btn {
+        min-height: 44px;
+        padding: 12px 20px;
+    }
+
+    /* Full-width cards */
+    .card {
+        border-radius: var(--radius);
+    }
+
+    .login-brand {
+        height: 220px;
+    }
+
+    .login-brand-title {
+        font-size: 22px;
+    }
+
+    .welcome-hero h2 {
+        font-size: 20px;
     }
 }
