@@ -2380,19 +2380,30 @@ table {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 540px) {
 
-    /* Single column cards */
+    /* Single column cards — prevent clipping */
     .summary-cards {
         grid-template-columns: 1fr;
+        overflow: hidden;
     }
 
     .summary-card {
-        padding: 14px;
+        padding: 16px;
     }
 
     .card-info .card-value {
         font-size: 20px;
+    }
+
+    /* Quick actions full width */
+    .quick-actions {
+        flex-direction: column;
+    }
+
+    .quick-actions .btn {
+        width: 100%;
+        min-width: unset;
     }
 
     /* Page toolbar */
@@ -2407,16 +2418,6 @@ table {
 
     .search-box {
         min-width: 100%;
-    }
-
-    /* Quick actions stack */
-    .quick-actions {
-        flex-direction: column;
-    }
-
-    .quick-actions .btn {
-        width: 100%;
-        min-width: unset;
     }
 
     /* Touch-friendly buttons */
@@ -2437,6 +2438,10 @@ table {
 
     .login-brand-title {
         font-size: 20px;
+    }
+
+    .login-brand-stats {
+        gap: 16px;
     }
 
     .login-brand-stats .stat-number {
@@ -2467,5 +2472,14 @@ table {
     /* Header */
     .page-title {
         font-size: 16px;
+    }
+
+    /* Pipeline legend */
+    .pipeline-legend {
+        gap: 6px;
+    }
+
+    .pipeline-legend-item {
+        font-size: 10px;
     }
 }
