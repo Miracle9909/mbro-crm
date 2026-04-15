@@ -1,5 +1,5 @@
 /**
- * M-Bro CRM — Main Application Logic
+ * M-Bro CRM — v2.0 Main Application Logic
  * Navigation, CRUD, Dashboard, Contract Wizard
  */
 (function () {
@@ -18,6 +18,7 @@
         const savedC = localStorage.getItem('mbro_contracts');
         contracts = savedC ? JSON.parse(savedC) : [...MOCK_CONTRACTS];
         updateDashboard();
+        updateWelcomeHero();
         renderRecentLeads();
         renderDashNews();
         renderPipeline();
@@ -74,6 +75,19 @@
         document.getElementById('activeContracts').textContent = contracts.filter(c => c.status !== 'Đã phát hành').length;
         const rev = contracts.reduce((s, c) => s + c.premium, 0);
         document.getElementById('monthRevenue').textContent = fmt(rev);
+    }
+
+    function updateWelcomeHero() {
+        const now = new Date();
+        const hour = now.getHours();
+        let greeting = 'Xin chào';
+        if (hour < 12) greeting = 'Chào buổi sáng';
+        else if (hour < 18) greeting = 'Chào buổi chiều';
+        else greeting = 'Chào buổi tối';
+        const el = document.getElementById('welcomeGreeting');
+        if (el) el.textContent = greeting + ', Tư vấn viên! 👋';
+        const dateEl = document.getElementById('welcomeDate');
+        if (dateEl) dateEl.textContent = now.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) + ' — Bạn có ' + leads.filter(l => l.status === 'Mới').length + ' KHTN mới cần xử lý';
     }
 
     function updateLeadBadge() {
@@ -632,8 +646,36 @@
     // ===== NEWS =====
     function renderNews(filter) {
         const data = filter ? MOCK_NEWS.filter(n => n.category === filter) : MOCK_NEWS;
+        const featuredContainer = document.getElementById('newsFeatured');
         const grid = document.getElementById('newsGrid');
-        grid.innerHTML = data.map(n => `
+
+        if (data.length === 0) {
+            if (featuredContainer) featuredContainer.innerHTML = '';
+            grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg><h4>Không có tin tức</h4><p>Chưa có bài viết nào trong danh mục này</p></div>';
+            return;
+        }
+
+        // Featured hero (first item)
+        const featured = data[0];
+        if (featuredContainer) {
+            featuredContainer.innerHTML = `
+                <div class="news-featured-hero">
+                    <div class="news-featured-img" style="background:linear-gradient(135deg, ${featured.color}, ${featured.color}CC)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+                    </div>
+                    <div class="news-featured-body">
+                        <span class="news-tag">${featured.category}</span>
+                        <h3>${featured.title}</h3>
+                        <p>${featured.excerpt}</p>
+                        <span class="news-date">${formatDate(featured.date)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Remaining cards
+        const remaining = data.slice(1);
+        grid.innerHTML = remaining.map(n => `
             <div class="news-card-item">
                 <div class="news-card-img" style="background:linear-gradient(135deg, ${n.color}, ${n.color}CC)">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
@@ -650,9 +692,10 @@
         `).join('');
     }
 
-    window.filterNews = function () {
-        const v = document.getElementById('newsFilter').value;
-        renderNews(v || null);
+    window.filterNewsBy = function (category, btn) {
+        document.querySelectorAll('#newsFilterPills .doc-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderNews(category || null);
     };
 
     // ===== DOCUMENTS =====
