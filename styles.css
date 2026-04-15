@@ -196,7 +196,7 @@ table {
     width: 500px;
     height: 500px;
     border-radius: 50%;
-    background: rgba(233, 30, 99, 0.1);
+    background: rgba(37, 71, 208, 0.1);
     filter: blur(80px);
     z-index: 3;
 }
@@ -434,12 +434,12 @@ table {
 .btn-accent {
     background: var(--gradient-velocity);
     color: white;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.2);
+    box-shadow: 0 4px 16px rgba(37, 71, 208, 0.2);
 }
 
 .btn-accent:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(233, 30, 99, 0.3);
+    box-shadow: 0 8px 24px rgba(37, 71, 208, 0.3);
 }
 
 .btn-ghost {
@@ -505,7 +505,7 @@ table {
     width: 280px;
     height: 280px;
     border-radius: 50%;
-    background: rgba(255, 64, 129, 0.15);
+    background: rgba(37, 71, 208, 0.15);
     filter: blur(40px);
     animation: heroFloat 8s ease-in-out infinite reverse;
 }
@@ -764,7 +764,7 @@ table {
 .nav-item.active {
     background: var(--gradient-velocity);
     color: white;
-    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.25);
+    box-shadow: 0 4px 16px rgba(37, 71, 208, 0.25);
 }
 
 .nav-item.active svg {
@@ -984,7 +984,7 @@ table {
 
 .summary-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(233, 30, 99, 0.12);
+    box-shadow: 0 12px 32px rgba(37, 71, 208, 0.12);
 }
 
 .summary-card:hover::before {
