@@ -1,22 +1,22 @@
 /* ================================================================
    M-Bro CRM — v2.0 Design System
-   MB Brand: Blue (#0059A7) + White — Professional Light Theme
+   MB Brand: Blue (#1B3B8E) + Pink (#E5007D) — Official MBLife
    ================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    /* Brand Palette — MB Blue/White */
-    --mb-primary: #0059A7;
-    --mb-primary-dark: #003D73;
-    --mb-primary-light: #E8F4FD;
-    --mb-accent: #00A7E1;
-    --mb-accent-light: #E1F5FE;
-    --mb-pink: #0059A7;
-    --mb-pink-light: #E8F4FD;
-    --mb-rose: #0077CC;
-    --mb-cyan: #00A7E1;
-    --mb-cyan-light: #E1F5FE;
+    /* Brand Palette — Official MB Blue + MBLife Pink */
+    --mb-primary: #1B3B8E;
+    --mb-primary-dark: #0F2563;
+    --mb-primary-light: #EBF0FA;
+    --mb-accent: #E5007D;
+    --mb-accent-light: #FDE8F3;
+    --mb-pink: #E5007D;
+    --mb-pink-light: #FDE8F3;
+    --mb-rose: #E5007D;
+    --mb-cyan: #1B3B8E;
+    --mb-cyan-light: #EBF0FA;
 
     /* Surface System — Clean White */
     --mb-bg: #F0F4F8;
@@ -31,7 +31,7 @@
     --mb-success: #10B981;
     --mb-warning: #F59E0B;
     --mb-error: #EF4444;
-    --mb-info: #0059A7;
+    --mb-info: #1B3B8E;
 
     /* Layout */
     --sidebar-w: 260px;
@@ -48,12 +48,12 @@
     --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
     --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.14);
 
-    /* Gradients — MB Blue */
-    --gradient-velocity: linear-gradient(135deg, #0059A7 0%, #00A7E1 100%);
-    --gradient-brand: linear-gradient(135deg, #0059A7 0%, #0077CC 100%);
-    --gradient-glow: linear-gradient(135deg, #E8F4FD 0%, #E1F5FE 50%, #F0F4F8 100%);
-    --gradient-life: linear-gradient(135deg, #0059A7 0%, #00A7E1 100%);
-    --gradient-sidebar: linear-gradient(180deg, #0059A7 0%, #003D73 100%);
+    /* Gradients — MB Blue + MBLife Pink */
+    --gradient-velocity: linear-gradient(135deg, #1B3B8E 0%, #E5007D 100%);
+    --gradient-brand: linear-gradient(135deg, #1B3B8E 0%, #2A52BE 100%);
+    --gradient-glow: linear-gradient(135deg, #EBF0FA 0%, #FDE8F3 50%, #F0F4F8 100%);
+    --gradient-life: linear-gradient(135deg, #1B3B8E 0%, #E5007D 100%);
+    --gradient-sidebar: linear-gradient(180deg, #1B3B8E 0%, #0F2563 100%);
 
     /* Transitions */
     --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
