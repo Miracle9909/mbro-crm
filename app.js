@@ -146,17 +146,79 @@
         leads.forEach(l => { if (counts[l.status] !== undefined) counts[l.status]++; });
         const total = leads.length || 1;
 
-        let barHTML = '<div class="pipeline-bar">';
-        let legendHTML = '<div class="pipeline-legend">';
-        Object.entries(counts).forEach(([status, count]) => {
-            if (count > 0) {
-                barHTML += `<div class="pipeline-seg" style="flex:${count};background:${STATUS_COLORS[status]}" title="${status}: ${count}"></div>`;
-            }
-            legendHTML += `<div class="pipeline-legend-item"><span class="legend-dot" style="background:${STATUS_COLORS[status]}"></span>${status}: <strong>${count}</strong></div>`;
+        // Pipeline stages in funnel order (conversion flow)
+        const stages = [
+            'Mới', 'Đang liên hệ', 'Quan tâm', 'Đang đàm phán',
+            'Chờ duyệt', 'Đã phát hành HĐ'
+        ];
+        const lostStages = ['Từ chối', 'Ngừng theo dõi'];
+
+        // Build funnel HTML
+        let html = '<div class="funnel-container">';
+        html += '<div class="funnel-stages">';
+
+        const maxCount = Math.max(...stages.map(s => counts[s]), 1);
+
+        stages.forEach((stage, i) => {
+            const count = counts[stage];
+            const pct = ((count / total) * 100).toFixed(0);
+            // Width narrows progressively: from 100% down to ~35%
+            const widthPct = Math.max(35, 100 - (i * 12));
+            const color = STATUS_COLORS[stage];
+            const convRate = i > 0 && counts[stages[i - 1]] > 0
+                ? ((count / counts[stages[i - 1]]) * 100).toFixed(0) + '%'
+                : '';
+
+            html += `
+                <div class="funnel-stage" style="--stage-width:${widthPct}%;--stage-color:${color}" title="${stage}: ${count} (${pct}%)">
+                    <div class="funnel-bar">
+                        <div class="funnel-bar-fill"></div>
+                        <div class="funnel-bar-content">
+                            <span class="funnel-label">${stage}</span>
+                            <span class="funnel-count">${count}</span>
+                        </div>
+                    </div>
+                    ${convRate ? `<span class="funnel-conv" title="Tỉ lệ chuyển đổi từ giai đoạn trước">↓ ${convRate}</span>` : ''}
+                </div>`;
         });
-        barHTML += '</div>';
-        legendHTML += '</div>';
-        container.innerHTML = barHTML + legendHTML;
+
+        html += '</div>';
+
+        // Lost leads summary
+        const lostTotal = lostStages.reduce((s, st) => s + counts[st], 0);
+        if (lostTotal > 0) {
+            html += '<div class="funnel-lost">';
+            lostStages.forEach(stage => {
+                if (counts[stage] > 0) {
+                    html += `<div class="funnel-lost-item">
+                        <span class="legend-dot" style="background:${STATUS_COLORS[stage]}"></span>
+                        ${stage}: <strong>${counts[stage]}</strong>
+                    </div>`;
+                }
+            });
+            html += '</div>';
+        }
+
+        // Summary stat
+        const wonCount = counts['Đã phát hành HĐ'];
+        const winRate = total > 0 ? ((wonCount / total) * 100).toFixed(1) : 0;
+        html += `<div class="funnel-summary">
+            <div class="funnel-summary-item">
+                <div class="funnel-summary-value">${total}</div>
+                <div class="funnel-summary-label">Tổng KHTN</div>
+            </div>
+            <div class="funnel-summary-item">
+                <div class="funnel-summary-value" style="color:var(--mb-success)">${wonCount}</div>
+                <div class="funnel-summary-label">Đã phát hành</div>
+            </div>
+            <div class="funnel-summary-item">
+                <div class="funnel-summary-value" style="color:var(--mb-primary)">${winRate}%</div>
+                <div class="funnel-summary-label">Win Rate</div>
+            </div>
+        </div>`;
+
+        html += '</div>';
+        container.innerHTML = html;
     }
 
     // ===== LEADS TABLE =====
