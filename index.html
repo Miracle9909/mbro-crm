@@ -25,8 +25,7 @@
             <div class="login-brand-overlay">
                 <div class="login-brand-content">
                     <p class="login-brand-desc">Nền tảng CRM dành cho Tư vấn viên MB Life — quản lý KHTN doanh nghiệp,
-                        phát
-                        hành hợp đồng, theo dõi pipeline bán hàng.</p>
+                        quản lý bán hàng, theo dõi pipeline.</p>
                     <div class="login-brand-stats">
                         <div class="brand-stat"><span class="stat-num">1,200+</span><span class="stat-label">Tư vấn
                                 viên</span></div>
@@ -79,7 +78,7 @@
 
     <!-- ===== MAIN APP ===== -->
     <div id="mainApp" class="main-app hidden">
-        <!-- Sidebar -->
+        <!-- Sidebar — MB Blue -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
@@ -108,30 +107,23 @@
                     <span>KHTN</span>
                     <span class="nav-badge" id="leadBadge">0</span>
                 </a>
-                <a class="nav-item" data-page="contracts" onclick="navigateTo('contracts')">
+                <a class="nav-item" data-page="sales" onclick="navigateTo('sales')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18" />
+                        <path d="M18 17V9" />
+                        <path d="M13 17V5" />
+                        <path d="M8 17v-3" />
+                    </svg>
+                    <span>Quản lý bán hàng</span>
+                </a>
+                <a class="nav-item" data-page="documents" onclick="navigateTo('documents')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
                         <line x1="16" y1="13" x2="8" y2="13" />
                         <line x1="16" y1="17" x2="8" y2="17" />
                     </svg>
-                    <span>Hợp đồng</span>
-                </a>
-                <a class="nav-item" data-page="news" onclick="navigateTo('news')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path
-                            d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-                        <path d="M18 14h-8" />
-                        <path d="M15 18h-5" />
-                        <path d="M10 6h8v4h-8V6Z" />
-                    </svg>
-                    <span>Tin tức</span>
-                </a>
-                <a class="nav-item" data-page="documents" onclick="navigateTo('documents')">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                    </svg>
-                    <span>Tài liệu</span>
+                    <span>Biểu mẫu</span>
                 </a>
             </nav>
             <div class="sidebar-footer">
@@ -184,9 +176,9 @@
             <!-- Page Content -->
             <div class="page-content" id="pageContent">
 
-                <!-- ===== DASHBOARD ===== -->
+                <!-- ===== DASHBOARD (Simplified) ===== -->
                 <div id="page-dashboard" class="page active">
-                    <!-- Welcome Hero — Today's Agenda -->
+                    <!-- Welcome Hero -->
                     <div class="welcome-hero" id="welcomeHero">
                         <div class="welcome-hero-content">
                             <div class="welcome-hero-left">
@@ -199,20 +191,20 @@
                                     <span class="agenda-text">DN mới<br>cần liên hệ</span>
                                 </div>
                                 <div class="agenda-divider"></div>
-                                <div class="agenda-item" onclick="navigateTo('contracts')">
-                                    <span class="agenda-num" id="agendaContracts">0</span>
-                                    <span class="agenda-text">Hợp đồng<br>chờ xử lý</span>
-                                </div>
-                                <div class="agenda-divider"></div>
                                 <div class="agenda-item" onclick="navigateTo('leads')">
                                     <span class="agenda-num" id="agendaFollowup">0</span>
                                     <span class="agenda-text">DN cần<br>theo dõi</span>
+                                </div>
+                                <div class="agenda-divider"></div>
+                                <div class="agenda-item" onclick="navigateTo('sales')">
+                                    <span class="agenda-num" id="agendaPipeline">0</span>
+                                    <span class="agenda-text">DN đang<br>đàm phán</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- KPI Cards — Clear SME Metrics -->
+                    <!-- KPI Cards -->
                     <div class="summary-cards">
                         <div class="summary-card" onclick="navigateTo('leads')">
                             <div class="summary-icon blue">
@@ -231,10 +223,9 @@
                             <div class="summary-data">
                                 <span class="summary-value" id="totalLeads">0</span>
                                 <span class="summary-label">Doanh nghiệp theo dõi</span>
-                                <span class="summary-desc">Tổng số DN tiềm năng</span>
                             </div>
                         </div>
-                        <div class="summary-card" onclick="navigateTo('leads')">
+                        <div class="summary-card" onclick="navigateTo('sales')">
                             <div class="summary-icon sky">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -243,28 +234,12 @@
                                 </svg>
                             </div>
                             <div class="summary-data">
-                                <span class="summary-value" id="newLeads">0</span>
-                                <span class="summary-label">DN mới tiếp nhận</span>
-                                <span class="summary-desc">Chưa liên hệ lần đầu</span>
-                            </div>
-                        </div>
-                        <div class="summary-card" onclick="navigateTo('contracts')">
-                            <div class="summary-icon green">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                    <polyline points="14 2 14 8 20 8" />
-                                    <path d="M9 15l2 2 4-4" />
-                                </svg>
-                            </div>
-                            <div class="summary-data">
-                                <span class="summary-value" id="activeContracts">0</span>
-                                <span class="summary-label">Hợp đồng đang xử lý</span>
-                                <span class="summary-desc">Chờ duyệt / ký kết</span>
+                                <span class="summary-value" id="dealsClosed">0</span>
+                                <span class="summary-label">DN đã chốt deal</span>
                             </div>
                         </div>
                         <div class="summary-card">
-                            <div class="summary-icon accent">
+                            <div class="summary-icon green">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
                                     <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -272,13 +247,12 @@
                             </div>
                             <div class="summary-data">
                                 <span class="summary-value" id="monthRevenue">₫0</span>
-                                <span class="summary-label">Phí bảo hiểm tháng</span>
-                                <span class="summary-desc">Tổng phí HĐ đã ghi nhận</span>
+                                <span class="summary-label">Phí BH ước tính</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Quick Actions — B2B Sales -->
+                    <!-- Quick Actions -->
                     <div class="quick-actions">
                         <button class="btn btn-primary"
                             onclick="navigateTo('leads'); setTimeout(() => openAddLead(), 100)">
@@ -289,47 +263,22 @@
                             </svg>
                             Thêm doanh nghiệp
                         </button>
-                        <button class="btn btn-outline"
-                            onclick="navigateTo('contracts'); setTimeout(() => openNewContract(), 100)">
+                        <button class="btn btn-outline" onclick="navigateTo('sales')">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                <polyline points="14 2 14 8 20 8" />
+                                <path d="M3 3v18h18" />
+                                <path d="M18 17V9" />
+                                <path d="M13 17V5" />
+                                <path d="M8 17v-3" />
                             </svg>
-                            Tạo hợp đồng
-                        </button>
-                        <button class="btn btn-outline" onclick="navigateTo('leads')">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                            Tìm doanh nghiệp
+                            Pipeline bán hàng
                         </button>
                     </div>
 
-                    <!-- Dashboard Grid — Pipeline + News -->
-                    <div class="dashboard-grid">
-                        <div class="card pipeline-card">
-                            <div class="card-header">
-                                <h3>📊 Pipeline doanh nghiệp</h3>
-                                <span class="card-subtitle">Tiến trình chăm sóc khách hàng</span>
-                            </div>
-                            <div class="pipeline-chart" id="pipelineChart"></div>
-                        </div>
-                        <div class="card news-card">
-                            <div class="card-header">
-                                <h3>📰 Tin tức & Sự kiện</h3>
-                                <a class="link" onclick="navigateTo('news')">Xem tất cả</a>
-                            </div>
-                            <div class="news-list" id="dashNewsList"></div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Leads — Enterprise Focus -->
+                    <!-- Recent Leads Table -->
                     <div class="card recent-card">
                         <div class="card-header">
-                            <h3>🏢 Doanh nghiệp mới cập nhật</h3>
+                            <h3>Doanh nghiệp mới cập nhật</h3>
                             <a class="link" onclick="navigateTo('leads')">Xem tất cả</a>
                         </div>
                         <div class="recent-table-wrap">
@@ -350,7 +299,7 @@
                     </div>
                 </div>
 
-                <!-- ===== LEADS ===== -->
+                <!-- ===== LEADS LIST ===== -->
                 <div id="page-leads" class="page">
                     <div class="page-toolbar">
                         <div class="toolbar-left">
@@ -365,12 +314,11 @@
                             </div>
                             <select id="leadStatusFilter" class="filter-select" onchange="filterLeads()">
                                 <option value="">Tất cả trạng thái</option>
-                                <option value="Mới">Mới</option>
-                                <option value="Đang liên hệ">Đang liên hệ</option>
-                                <option value="Quan tâm">Quan tâm</option>
-                                <option value="Đang đàm phán">Đang đàm phán</option>
-                                <option value="Chờ duyệt">Chờ duyệt</option>
-                                <option value="Đã phát hành HĐ">Đã phát hành HĐ</option>
+                                <option value="Tiếp cận">Tiếp cận</option>
+                                <option value="Đánh giá nhu cầu">Đánh giá nhu cầu</option>
+                                <option value="Đề xuất">Đề xuất</option>
+                                <option value="Đàm phán">Đàm phán</option>
+                                <option value="Chốt deal">Chốt deal</option>
                                 <option value="Từ chối">Từ chối</option>
                                 <option value="Ngừng theo dõi">Ngừng theo dõi</option>
                             </select>
@@ -408,7 +356,7 @@
                     </div>
                 </div>
 
-                <!-- ===== LEAD DETAIL ===== -->
+                <!-- ===== LEAD DETAIL (Enterprise Detail) ===== -->
                 <div id="page-lead-detail" class="page">
                     <div class="detail-header">
                         <button class="btn btn-ghost" onclick="navigateTo('leads')">
@@ -426,11 +374,11 @@
                     </div>
                     <div class="detail-tabs">
                         <button class="tab-btn active" onclick="switchDetailTab('info', this)">Thông tin</button>
-                        <button class="tab-btn" onclick="switchDetailTab('interactions', this)">Lịch sử tương
-                            tác</button>
-                        <button class="tab-btn" onclick="switchDetailTab('products', this)">Sản phẩm</button>
-                        <button class="tab-btn" onclick="switchDetailTab('notes', this)">Ghi chú</button>
-                        <button class="tab-btn" onclick="switchDetailTab('payment', this)">💳 Thanh toán</button>
+                        <button class="tab-btn" onclick="switchDetailTab('stakeholders', this)">Stakeholders</button>
+                        <button class="tab-btn" onclick="switchDetailTab('la-list', this)">DS Nhân viên/LA</button>
+                        <button class="tab-btn" onclick="switchDetailTab('interactions', this)">Lịch sử</button>
+                        <button class="tab-btn" onclick="switchDetailTab('suggest', this)">Gợi ý SP</button>
+                        <button class="tab-btn" onclick="switchDetailTab('payment', this)">Thanh toán</button>
                     </div>
                     <div class="detail-body">
                         <div id="tab-info" class="tab-pane active">
@@ -441,17 +389,35 @@
                                 <button class="btn btn-outline" onclick="openEditLead()">Chỉnh sửa</button>
                             </div>
                         </div>
+                        <div id="tab-stakeholders" class="tab-pane">
+                            <div class="tab-toolbar">
+                                <button class="btn btn-primary btn-sm" onclick="openAddStakeholder()">+ Thêm
+                                    stakeholder</button>
+                            </div>
+                            <div id="stakeholdersList"></div>
+                        </div>
+                        <div id="tab-la-list" class="tab-pane">
+                            <div class="tab-toolbar">
+                                <button class="btn btn-primary btn-sm" onclick="openAddLA()">+ Thêm LA</button>
+                                <button class="btn btn-outline btn-sm" onclick="simulateExcelImport()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
+                                    Import Excel
+                                </button>
+                            </div>
+                            <div id="laListContent"></div>
+                        </div>
                         <div id="tab-interactions" class="tab-pane">
                             <button class="btn btn-primary btn-sm" onclick="openAddInteraction()"
                                 style="margin-bottom:16px">+ Thêm tương tác</button>
                             <div class="timeline" id="interactionTimeline"></div>
                         </div>
-                        <div id="tab-products" class="tab-pane">
-                            <div class="products-grid" id="productsGrid"></div>
-                        </div>
-                        <div id="tab-notes" class="tab-pane">
-                            <textarea id="leadNotes" class="notes-textarea" placeholder="Ghi chú về khách hàng..."
-                                oninput="saveNotes()"></textarea>
+                        <div id="tab-suggest" class="tab-pane">
+                            <div id="suggestContent"></div>
                         </div>
                         <div id="tab-payment" class="tab-pane">
                             <div id="paymentContent"></div>
@@ -459,63 +425,26 @@
                     </div>
                 </div>
 
-                <!-- ===== CONTRACTS ===== -->
-                <div id="page-contracts" class="page">
-                    <div class="page-toolbar">
-                        <div class="toolbar-left">
-                            <div class="search-box">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                </svg>
-                                <input type="text" id="contractSearch" placeholder="Tìm hợp đồng..."
-                                    oninput="filterContracts()">
-                            </div>
+                <!-- ===== SALES MANAGEMENT ===== -->
+                <div id="page-sales" class="page">
+                    <div class="sales-header">
+                        <h3>Pipeline bán hàng</h3>
+                        <div class="sales-view-toggle">
+                            <button class="btn btn-sm active" id="btnPipelineView"
+                                onclick="switchSalesView('pipeline')">Pipeline</button>
+                            <button class="btn btn-sm" id="btnTimelineView"
+                                onclick="switchSalesView('timeline')">Timeline</button>
                         </div>
-                        <button class="btn btn-primary" onclick="openNewContract()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19" />
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                            </svg>
-                            Tạo hợp đồng
-                        </button>
                     </div>
-                    <div class="card">
-                        <div class="table-responsive">
-                            <table class="data-table" id="contractsTable">
-                                <thead>
-                                    <tr>
-                                        <th>Mã HĐ</th>
-                                        <th>Doanh nghiệp</th>
-                                        <th>Sản phẩm</th>
-                                        <th>Tổng phí</th>
-                                        <th>Trạng thái</th>
-                                        <th>Ngày tạo</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="contractsTableBody"></tbody>
-                            </table>
-                        </div>
+                    <div id="salesPipelineView">
+                        <div class="pipeline-kanban" id="pipelineKanban"></div>
+                    </div>
+                    <div id="salesTimelineView" style="display:none">
+                        <div class="sales-timeline" id="salesTimeline"></div>
                     </div>
                 </div>
 
-                <!-- ===== NEWS ===== -->
-                <div id="page-news" class="page">
-                    <div class="news-filter-pills" id="newsFilterPills">
-                        <button class="doc-cat-btn active" onclick="filterNewsBy('', this)">Tất cả</button>
-                        <button class="doc-cat-btn" onclick="filterNewsBy('Nội bộ', this)">Nội bộ</button>
-                        <button class="doc-cat-btn" onclick="filterNewsBy('Sự kiện', this)">Sự kiện</button>
-                        <button class="doc-cat-btn" onclick="filterNewsBy('Đào tạo', this)">Đào tạo</button>
-                        <button class="doc-cat-btn" onclick="filterNewsBy('Sản phẩm', this)">Sản phẩm</button>
-                    </div>
-                    <div id="newsFeatured"></div>
-                    <div class="news-grid" id="newsGrid"></div>
-                </div>
-
-                <!-- ===== DOCUMENTS ===== -->
+                <!-- ===== BIỂU MẪU (Documents) ===== -->
                 <div id="page-documents" class="page">
                     <div class="doc-categories">
                         <button class="doc-cat-btn active" onclick="filterDocs('all', this)">Tất cả</button>
@@ -550,32 +479,6 @@
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody"></div>
-        </div>
-    </div>
-
-    <!-- Contract Wizard Modal -->
-    <div class="modal-overlay hidden" id="contractWizard" onclick="closeContractWizard()">
-        <div class="modal modal-lg" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Phát hành Hợp đồng Doanh nghiệp</h3>
-                <button class="modal-close" onclick="closeContractWizard()">&times;</button>
-            </div>
-            <div class="wizard-steps">
-                <div class="wizard-step active" data-step="1"><span class="step-num">1</span><span
-                        class="step-label">Chọn KHTN</span></div>
-                <div class="wizard-step" data-step="2"><span class="step-num">2</span><span class="step-label">Thông tin
-                        HĐ</span></div>
-                <div class="wizard-step" data-step="3"><span class="step-num">3</span><span
-                        class="step-label">NĐBH</span></div>
-                <div class="wizard-step" data-step="4"><span class="step-num">4</span><span class="step-label">Xác
-                        nhận</span></div>
-            </div>
-            <div class="modal-body wizard-body" id="wizardBody"></div>
-            <div class="modal-footer">
-                <button class="btn btn-ghost" id="wizardPrev" onclick="wizardPrevStep()" style="display:none">Quay
-                    lại</button>
-                <button class="btn btn-primary" id="wizardNext" onclick="wizardNextStep()">Tiếp theo</button>
-            </div>
         </div>
     </div>
 

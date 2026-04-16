@@ -1,60 +1,59 @@
 /* ================================================================
    M-Bro CRM — v2.0 Design System
-   Based on MB Life (mblife.vn) 2025 Rebrand
-   Brand: Navy (MB) + Pink (Life) + Cyan (Tech)
+   MB Brand: Blue (#0059A7) + White — Professional Light Theme
    ================================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    /* Brand Palette — MB Life MVP Reference */
-    --mb-primary: #2547D0;
-    --mb-primary-dark: #1A33A3;
-    --mb-primary-light: #E8EDFA;
-    --mb-accent: #D02547;
-    --mb-accent-light: #FCEAEE;
-    --mb-pink: #D02547;
-    --mb-pink-light: #FCEAEE;
-    --mb-rose: #E83E6A;
-    --mb-cyan: #00AEEF;
+    /* Brand Palette — MB Blue/White */
+    --mb-primary: #0059A7;
+    --mb-primary-dark: #003D73;
+    --mb-primary-light: #E8F4FD;
+    --mb-accent: #00A7E1;
+    --mb-accent-light: #E1F5FE;
+    --mb-pink: #0059A7;
+    --mb-pink-light: #E8F4FD;
+    --mb-rose: #0077CC;
+    --mb-cyan: #00A7E1;
     --mb-cyan-light: #E1F5FE;
 
-    /* Surface System — Premium Glass */
-    --mb-bg: #F8FAFC;
-    --mb-card: rgba(255, 255, 255, 0.92);
-    --mb-surface-dim: #E4E9F0;
-    --mb-surface-container: #F1F4F9;
-    --mb-text: #0F172A;
+    /* Surface System — Clean White */
+    --mb-bg: #F0F4F8;
+    --mb-card: #FFFFFF;
+    --mb-surface-dim: #E2E8F0;
+    --mb-surface-container: #F7F9FC;
+    --mb-text: #1A2B47;
     --mb-text-secondary: #334155;
-    --mb-muted: #64748B;
+    --mb-muted: #6B7B8D;
 
     /* Status */
-    --mb-success: #16A34A;
+    --mb-success: #10B981;
     --mb-warning: #F59E0B;
-    --mb-error: #DC2626;
-    --mb-info: #0284C7;
+    --mb-error: #EF4444;
+    --mb-info: #0059A7;
 
     /* Layout */
     --sidebar-w: 260px;
     --header-h: 68px;
-    --radius: 20px;
-    --radius-lg: 28px;
+    --radius: 16px;
+    --radius-lg: 20px;
     --radius-pill: 100px;
-    --radius-sm: 14px;
+    --radius-sm: 10px;
 
-    /* Premium Shadows — Soft diffused */
-    --shadow-sm: 0 2px 12px rgba(37, 71, 208, 0.04);
-    --shadow: 0 4px 20px rgba(37, 71, 208, 0.06);
-    --shadow-md: 0 8px 30px rgba(37, 71, 208, 0.08);
-    --shadow-lg: 0 14px 40px rgba(37, 71, 208, 0.10);
-    --shadow-float: 0 20px 50px rgba(37, 71, 208, 0.12);
+    /* Shadows — Subtle professional */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.10);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+    --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.14);
 
-    /* Gradients — MVP Blue→Pink */
-    --gradient-velocity: linear-gradient(135deg, #2547D0 0%, #6C3AED 50%, #D02547 100%);
-    --gradient-brand: linear-gradient(135deg, #2547D0 0%, #D02547 100%);
-    --gradient-glow: linear-gradient(135deg, #E8EDFA 0%, #FCEAEE 50%, #E1F5FE 100%);
-    --gradient-life: linear-gradient(135deg, #2547D0 0%, #6C3AED 100%);
-    --gradient-sidebar: linear-gradient(180deg, #0B1124 0%, #111C3D 50%, #162152 100%);
+    /* Gradients — MB Blue */
+    --gradient-velocity: linear-gradient(135deg, #0059A7 0%, #00A7E1 100%);
+    --gradient-brand: linear-gradient(135deg, #0059A7 0%, #0077CC 100%);
+    --gradient-glow: linear-gradient(135deg, #E8F4FD 0%, #E1F5FE 50%, #F0F4F8 100%);
+    --gradient-life: linear-gradient(135deg, #0059A7 0%, #00A7E1 100%);
+    --gradient-sidebar: linear-gradient(180deg, #0059A7 0%, #003D73 100%);
 
     /* Transitions */
     --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -88,14 +87,14 @@ body {
 }
 
 a {
-    color: var(--mb-cyan);
+    color: var(--mb-primary);
     text-decoration: none;
     cursor: pointer;
     transition: color var(--transition-fast);
 }
 
 a:hover {
-    color: var(--mb-primary);
+    color: var(--mb-accent);
 }
 
 button {
@@ -2792,4 +2791,363 @@ table {
     .funnel-bar {
         height: 30px;
     }
+
+    .pipeline-kanban {
+        flex-direction: column;
+    }
+
+    .kanban-column {
+        min-width: unset;
+    }
+}
+
+/* ===== SALES MANAGEMENT — Pipeline Kanban ===== */
+.sales-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.sales-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--mb-text);
+}
+
+.sales-view-toggle {
+    display: flex;
+    gap: 4px;
+    background: var(--mb-surface-dim);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+}
+
+.sales-view-toggle .btn {
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--mb-muted);
+    transition: var(--transition-fast);
+}
+
+.sales-view-toggle .btn.active {
+    background: var(--mb-primary);
+    color: white;
+}
+
+.pipeline-kanban {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.kanban-column {
+    flex: 1;
+    min-width: 220px;
+    background: var(--mb-surface-container);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+.kanban-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--mb-surface-dim);
+}
+
+.kanban-column-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.kanban-count {
+    font-size: 12px;
+    background: var(--mb-primary-light);
+    color: var(--mb-primary);
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+}
+
+.kanban-card {
+    background: var(--mb-card);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.kanban-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+}
+
+.kanban-card-title {
+    font-weight: 600;
+    color: var(--mb-text);
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.kanban-card-meta {
+    font-size: 12px;
+    color: var(--mb-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.kanban-card-amount {
+    font-weight: 700;
+    color: var(--mb-primary);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+/* Sales Timeline */
+.sales-timeline {
+    max-width: 700px;
+}
+
+.timeline-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    position: relative;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 48px;
+    bottom: 0;
+    width: 2px;
+    background: var(--mb-surface-dim);
+}
+
+.timeline-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--mb-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.timeline-body {
+    flex: 1;
+}
+
+.timeline-body h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mb-text);
+    margin-bottom: 4px;
+}
+
+.timeline-body p {
+    font-size: 13px;
+    color: var(--mb-muted);
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--mb-muted);
+}
+
+/* ===== STAKEHOLDERS ===== */
+.tab-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.stakeholder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.stakeholder-card {
+    background: var(--mb-card);
+    border: 1px solid var(--mb-surface-dim);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    transition: var(--transition-fast);
+}
+
+.stakeholder-card:hover {
+    box-shadow: var(--shadow);
+}
+
+.stakeholder-name {
+    font-weight: 600;
+    color: var(--mb-text);
+    font-size: 14px;
+}
+
+.stakeholder-role {
+    font-size: 12px;
+    color: var(--mb-primary);
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+.stakeholder-contact {
+    font-size: 13px;
+    color: var(--mb-muted);
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stakeholder-primary {
+    border-left: 3px solid var(--mb-primary);
+}
+
+/* ===== LA LIST ===== */
+.la-table {
+    width: 100%;
+}
+
+.la-table th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--mb-muted);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--mb-surface-dim);
+}
+
+.la-table td {
+    padding: 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--mb-surface-dim);
+}
+
+.la-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.la-import-banner {
+    background: var(--mb-primary-light);
+    border: 1px dashed var(--mb-primary);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+    margin-top: 16px;
+    color: var(--mb-primary);
+}
+
+/* ===== PRODUCT SUGGESTION ===== */
+.suggest-wizard {
+    max-width: 600px;
+}
+
+.suggest-section {
+    margin-bottom: 24px;
+}
+
+.suggest-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--mb-text);
+}
+
+.suggest-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.suggest-option {
+    padding: 8px 18px;
+    border: 2px solid var(--mb-surface-dim);
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    color: var(--mb-text-secondary);
+}
+
+.suggest-option:hover,
+.suggest-option.active {
+    border-color: var(--mb-primary);
+    background: var(--mb-primary-light);
+    color: var(--mb-primary);
+    font-weight: 600;
+}
+
+.suggest-results {
+    margin-top: 24px;
+}
+
+.suggest-product-card {
+    background: var(--mb-card);
+    border: 1px solid var(--mb-surface-dim);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: var(--transition-fast);
+}
+
+.suggest-product-card:hover {
+    box-shadow: var(--shadow);
+    border-color: var(--mb-primary);
+}
+
+.suggest-product-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--mb-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.suggest-product-info h4 {
+    font-weight: 600;
+    color: var(--mb-text);
+    margin-bottom: 4px;
+}
+
+.suggest-product-info p {
+    font-size: 13px;
+    color: var(--mb-muted);
+}
+
+.suggest-product-price {
+    font-weight: 700;
+    color: var(--mb-primary);
+    font-size: 14px;
+    margin-left: auto;
+    white-space: nowrap;
 }

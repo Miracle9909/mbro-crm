@@ -1,1068 +1,776 @@
 /**
- * M-Bro CRM — v2.0 Main Application Logic
- * Navigation, CRUD, Dashboard, Contract Wizard
+ * M-Bro CRM v2.0 — Main Application Logic
+ * Enterprise-centric: Stakeholders, LA/HSYCBH, Sales Pipeline, Product Suggestions
  */
 (function () {
     'use strict';
 
     let leads = [];
-    let contracts = [];
     let currentLead = null;
-    let wizardStep = 1;
-    let wizardData = {};
 
     // ===== INIT =====
     function init() {
-        const saved = localStorage.getItem('mbro_leads');
+        const saved = localStorage.getItem('mbro_leads_v2');
         leads = saved ? JSON.parse(saved) : [...MOCK_LEADS];
-        const savedC = localStorage.getItem('mbro_contracts');
-        contracts = savedC ? JSON.parse(savedC) : [...MOCK_CONTRACTS];
-        updateDashboard();
-        updateWelcomeHero();
-        renderRecentLeads();
-        renderDashNews();
-        renderPipeline();
-        renderLeadsTable();
-        renderContracts();
-        renderNews();
-        renderDocuments();
-        updateLeadBadge();
+        if (localStorage.getItem('mbro_loggedIn')) {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            navigateTo('dashboard');
+        }
     }
+    init();
 
     function save() {
-        localStorage.setItem('mbro_leads', JSON.stringify(leads));
-        localStorage.setItem('mbro_contracts', JSON.stringify(contracts));
+        localStorage.setItem('mbro_leads_v2', JSON.stringify(leads));
     }
 
-    function fmt(n) { return '₫' + Math.abs(n).toLocaleString('vi-VN'); }
+    function fmt(n) {
+        return new Intl.NumberFormat('vi-VN').format(n);
+    }
 
     // ===== LOGIN =====
-    window.handleLogin = function (e) {
+    function handleLogin(e) {
         e.preventDefault();
+        localStorage.setItem('mbro_loggedIn', 'true');
         document.getElementById('loginPage').classList.add('hidden');
         document.getElementById('mainApp').classList.remove('hidden');
-        init();
+        navigateTo('dashboard');
         return false;
-    };
+    }
 
-    window.handleLogout = function () {
-        document.getElementById('mainApp').classList.add('hidden');
-        document.getElementById('loginPage').classList.remove('hidden');
-    };
+    function handleLogout() {
+        localStorage.removeItem('mbro_loggedIn');
+        location.reload();
+    }
 
     // ===== NAVIGATION =====
-    window.navigateTo = function (page) {
+    const PAGE_TITLES = { dashboard: 'Trang chủ', leads: 'KHTN', 'lead-detail': 'Chi tiết KHTN', sales: 'Quản lý bán hàng', documents: 'Biểu mẫu' };
+
+    function navigateTo(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         const target = document.getElementById('page-' + page);
         if (target) target.classList.add('active');
+        document.getElementById('pageTitle').textContent = PAGE_TITLES[page] || page;
+        document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+        // Close sidebar on mobile
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+        // Render page content
+        if (page === 'dashboard') updateDashboard();
+        if (page === 'leads') renderLeadsTable();
+        if (page === 'sales') renderSalesPage();
+        if (page === 'documents') renderDocuments();
+    }
 
-        document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
-        const navItem = document.querySelector('.nav-item[data-page="' + page + '"]');
-        if (navItem) navItem.classList.add('active');
+    function toggleSidebar() {
+        const sb = document.getElementById('sidebar');
+        const ov = document.getElementById('sidebarOverlay');
+        sb.classList.toggle('open');
+        ov.classList.toggle('active');
+    }
 
-        const titles = { dashboard: 'Trang chủ', leads: 'Khách hàng Tiềm năng', contracts: 'Hợp đồng', news: 'Tin tức & Sự kiện', documents: 'Tài liệu & Biểu mẫu', 'lead-detail': 'Chi tiết KHTN' };
-        document.getElementById('pageTitle').textContent = titles[page] || '';
-    };
-
-    window.toggleSidebar = function () {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('open');
-        if (overlay) overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
-    };
-
-    // ===== DASHBOARD =====
+    // ===== DASHBOARD (Simplified) =====
     function updateDashboard() {
+        updateWelcomeHero();
+        updateLeadBadge();
+        renderRecentLeads();
+        // KPI
         document.getElementById('totalLeads').textContent = leads.length;
-        const newCount = leads.filter(l => l.status === 'Mới').length;
-        document.getElementById('newLeads').textContent = newCount;
-        const pendingContracts = contracts.filter(c => c.status !== 'Đã phát hành').length;
-        document.getElementById('activeContracts').textContent = pendingContracts;
-        const rev = contracts.reduce((s, c) => s + c.premium, 0);
-        document.getElementById('monthRevenue').textContent = fmt(rev);
-        // Agenda counters
-        const agNew = document.getElementById('agendaNew');
-        if (agNew) agNew.textContent = newCount;
-        const agContracts = document.getElementById('agendaContracts');
-        if (agContracts) agContracts.textContent = pendingContracts;
-        const agFollowup = document.getElementById('agendaFollowup');
-        if (agFollowup) agFollowup.textContent = leads.filter(l => ['Đang liên hệ', 'Quan tâm', 'Đang đàm phán'].includes(l.status)).length;
+        document.getElementById('dealsClosed').textContent = leads.filter(l => l.status === 'Chốt deal').length;
+        const totalPremium = leads.reduce((s, l) => s + (l.premiumEstimate || 0), 0);
+        document.getElementById('monthRevenue').textContent = '₫' + fmt(totalPremium);
+        // Agenda
+        document.getElementById('agendaNew').textContent = leads.filter(l => l.status === 'Tiếp cận').length;
+        document.getElementById('agendaFollowup').textContent = leads.filter(l => l.nextFollowUp).length;
+        document.getElementById('agendaPipeline').textContent = leads.filter(l => l.status === 'Đàm phán').length;
     }
 
     function updateWelcomeHero() {
         const now = new Date();
-        const hour = now.getHours();
-        let greeting = 'Xin chào';
-        if (hour < 12) greeting = 'Chào buổi sáng';
-        else if (hour < 18) greeting = 'Chào buổi chiều';
-        else greeting = 'Chào buổi tối';
-        const el = document.getElementById('welcomeGreeting');
-        if (el) el.textContent = greeting + ', Tư vấn viên! 👋';
-        const dateEl = document.getElementById('welcomeDate');
-        if (dateEl) dateEl.textContent = now.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }) + ' — Bạn có ' + leads.filter(l => l.status === 'Mới').length + ' KHTN mới cần xử lý';
+        const h = now.getHours();
+        let greeting = h < 12 ? 'Chào buổi sáng' : h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối';
+        document.getElementById('welcomeGreeting').textContent = greeting + '! 👋';
+        document.getElementById('welcomeDate').textContent =
+            `${['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][now.getDay()]}, ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
     }
 
     function updateLeadBadge() {
-        const newCount = leads.filter(l => l.status === 'Mới').length;
-        document.getElementById('leadBadge').textContent = newCount;
+        const badge = document.getElementById('leadBadge');
+        const count = leads.filter(l => l.status === 'Tiếp cận' || l.status === 'Đánh giá nhu cầu').length;
+        badge.textContent = count;
+        badge.style.display = count ? '' : 'none';
     }
 
     function renderRecentLeads() {
         const tbody = document.querySelector('#recentLeadsTable tbody');
         const recent = [...leads].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
-        tbody.innerHTML = recent.map(l => `
-            <tr>
-                <td><strong>${l.id}</strong></td>
-                <td>${l.company}</td>
-                <td>${l.representative}</td>
-                <td><span class="status-badge ${STATUS_MAP[l.status]}">${l.status}</span></td>
-                <td>${formatDate(l.createdAt)}</td>
-                <td><button class="action-btn" onclick="viewLead('${l.id}')" title="Xem chi tiết">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                </button></td>
-            </tr>
-        `).join('');
-    }
-
-    function renderDashNews() {
-        const container = document.getElementById('dashNewsList');
-        container.innerHTML = MOCK_NEWS.slice(0, 4).map(n => `
-            <div class="news-item">
-                <div class="news-thumb" style="background: linear-gradient(135deg, ${n.color}22, ${n.color}44)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${n.color}" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-                </div>
-                <div class="news-item-body">
-                    <div class="news-item-title">${n.title}</div>
-                    <div class="news-item-meta"><span class="news-tag">${n.category}</span> ${formatDate(n.date)}</div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function renderPipeline() {
-        const container = document.getElementById('pipelineChart');
-        const counts = {};
-        Object.keys(STATUS_COLORS).forEach(s => counts[s] = 0);
-        leads.forEach(l => { if (counts[l.status] !== undefined) counts[l.status]++; });
-        const total = leads.length || 1;
-
-        // Pipeline stages in funnel order (conversion flow)
-        const stages = [
-            'Mới', 'Đang liên hệ', 'Quan tâm', 'Đang đàm phán',
-            'Chờ duyệt', 'Đã phát hành HĐ'
-        ];
-        const lostStages = ['Từ chối', 'Ngừng theo dõi'];
-
-        // Build funnel HTML
-        let html = '<div class="funnel-container">';
-        html += '<div class="funnel-stages">';
-
-        const maxCount = Math.max(...stages.map(s => counts[s]), 1);
-
-        stages.forEach((stage, i) => {
-            const count = counts[stage];
-            const pct = ((count / total) * 100).toFixed(0);
-            // Width narrows progressively: from 100% down to ~35%
-            const widthPct = Math.max(35, 100 - (i * 12));
-            const color = STATUS_COLORS[stage];
-            const convRate = i > 0 && counts[stages[i - 1]] > 0
-                ? ((count / counts[stages[i - 1]]) * 100).toFixed(0) + '%'
-                : '';
-
-            html += `
-                <div class="funnel-stage" style="--stage-width:${widthPct}%;--stage-color:${color}" title="${stage}: ${count} (${pct}%)">
-                    <div class="funnel-bar">
-                        <div class="funnel-bar-fill"></div>
-                        <div class="funnel-bar-content">
-                            <span class="funnel-label">${stage}</span>
-                            <span class="funnel-count">${count}</span>
-                        </div>
-                    </div>
-                    ${convRate ? `<span class="funnel-conv" title="Tỉ lệ chuyển đổi từ giai đoạn trước">↓ ${convRate}</span>` : ''}
-                </div>`;
-        });
-
-        html += '</div>';
-
-        // Lost leads summary
-        const lostTotal = lostStages.reduce((s, st) => s + counts[st], 0);
-        if (lostTotal > 0) {
-            html += '<div class="funnel-lost">';
-            lostStages.forEach(stage => {
-                if (counts[stage] > 0) {
-                    html += `<div class="funnel-lost-item">
-                        <span class="legend-dot" style="background:${STATUS_COLORS[stage]}"></span>
-                        ${stage}: <strong>${counts[stage]}</strong>
-                    </div>`;
-                }
-            });
-            html += '</div>';
-        }
-
-        // Summary stat
-        const wonCount = counts['Đã phát hành HĐ'];
-        const winRate = total > 0 ? ((wonCount / total) * 100).toFixed(1) : 0;
-        html += `<div class="funnel-summary">
-            <div class="funnel-summary-item">
-                <div class="funnel-summary-value">${total}</div>
-                <div class="funnel-summary-label">Tổng KHTN</div>
-            </div>
-            <div class="funnel-summary-item">
-                <div class="funnel-summary-value" style="color:var(--mb-success)">${wonCount}</div>
-                <div class="funnel-summary-label">Đã phát hành</div>
-            </div>
-            <div class="funnel-summary-item">
-                <div class="funnel-summary-value" style="color:var(--mb-primary)">${winRate}%</div>
-                <div class="funnel-summary-label">Win Rate</div>
-            </div>
-        </div>`;
-
-        html += '</div>';
-        container.innerHTML = html;
+        tbody.innerHTML = recent.map(l => `<tr>
+            <td>${l.id}</td><td>${l.company}</td><td>${l.representative}</td>
+            <td><span class="status-badge ${STATUS_MAP[l.status] || ''}">${l.status}</span></td>
+            <td>${formatDate(l.createdAt)}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="viewLead('${l.id}')">Xem</button></td>
+        </tr>`).join('');
     }
 
     // ===== LEADS TABLE =====
     function renderLeadsTable(filtered) {
         const data = filtered || leads;
         const tbody = document.getElementById('leadsTableBody');
-        tbody.innerHTML = data.map(l => `
-            <tr>
-                <td><strong>${l.id}</strong></td>
-                <td>${l.company}</td>
-                <td>${l.representative}</td>
-                <td>${l.phone}</td>
-                <td><span class="status-badge ${STATUS_MAP[l.status]}">${l.status}</span></td>
-                <td>${formatDate(l.createdAt)}</td>
-                <td>
-                    <button class="action-btn" onclick="viewLead('${l.id}')" title="Xem chi tiết">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </button>
-                    <button class="action-btn" onclick="deleteLead('${l.id}')" title="Xóa">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-        document.getElementById('leadsInfo').textContent = `Hiển thị ${data.length} / ${leads.length} KHTN`;
+        tbody.innerHTML = data.map(l => `<tr>
+            <td>${l.id}</td>
+            <td><strong>${l.company}</strong></td>
+            <td>${l.representative}</td>
+            <td>${l.phone}</td>
+            <td><span class="status-badge ${STATUS_MAP[l.status] || ''}">${l.status}</span></td>
+            <td>${formatDate(l.createdAt)}</td>
+            <td>
+                <button class="btn btn-ghost btn-sm" onclick="viewLead('${l.id}')">Xem</button>
+                <button class="btn btn-ghost btn-sm" onclick="deleteLead('${l.id}')" style="color:var(--mb-error)">Xóa</button>
+            </td>
+        </tr>`).join('');
+        document.getElementById('leadsInfo').textContent = `Hiển thị ${data.length} KHTN`;
     }
 
-    window.filterLeads = function () {
+    function filterLeads() {
         const q = document.getElementById('leadSearch').value.toLowerCase();
-        const status = document.getElementById('leadStatusFilter').value;
-        let filtered = leads;
-        if (q) filtered = filtered.filter(l => l.company.toLowerCase().includes(q) || l.representative.toLowerCase().includes(q) || l.id.toLowerCase().includes(q));
-        if (status) filtered = filtered.filter(l => l.status === status);
+        const s = document.getElementById('leadStatusFilter').value;
+        const filtered = leads.filter(l =>
+            (!q || l.company.toLowerCase().includes(q) || l.representative.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)) &&
+            (!s || l.status === s)
+        );
         renderLeadsTable(filtered);
-    };
+    }
 
-    window.deleteLead = function (id) {
-        if (!confirm('Bạn có chắc muốn xóa KHTN này?')) return;
+    function deleteLead(id) {
+        if (!confirm('Xóa doanh nghiệp này?')) return;
         leads = leads.filter(l => l.id !== id);
         save();
         renderLeadsTable();
         updateDashboard();
-        renderPipeline();
-        renderRecentLeads();
-        updateLeadBadge();
-        showToast('Đã xóa KHTN thành công');
-    };
+        showToast('Đã xóa doanh nghiệp');
+    }
 
     // ===== LEAD DETAIL =====
-    window.viewLead = function (id) {
+    function viewLead(id) {
         currentLead = leads.find(l => l.id === id);
         if (!currentLead) return;
+        navigateTo('lead-detail');
 
         document.getElementById('detailCompanyName').textContent = currentLead.company;
-        const badge = document.getElementById('detailStatus');
-        badge.textContent = currentLead.status;
-        badge.className = 'status-badge ' + STATUS_MAP[currentLead.status];
+        const statusEl = document.getElementById('detailStatus');
+        statusEl.textContent = currentLead.status;
+        statusEl.className = 'status-badge ' + (STATUS_MAP[currentLead.status] || '');
 
+        // Info grid
         const grid = document.getElementById('leadInfoGrid');
         const stars = '★'.repeat(currentLead.rating || 0) + '☆'.repeat(5 - (currentLead.rating || 0));
-        const starsColor = currentLead.rating >= 4 ? 'var(--mb-warning)' : currentLead.rating >= 2 ? 'var(--mb-text-secondary)' : 'var(--mb-text-muted)';
         grid.innerHTML = `
-            <div class="info-item"><label>Mã KH</label><span>${currentLead.id}</span></div>
-            <div class="info-item"><label>Mã số thuế</label><span>${currentLead.taxCode}</span></div>
-            <div class="info-item"><label>Người đại diện</label><span>${currentLead.representative}</span></div>
-            <div class="info-item"><label>Chức vụ</label><span>${currentLead.position || '—'}</span></div>
-            <div class="info-item"><label>Điện thoại</label><span>${currentLead.phone}</span></div>
-            <div class="info-item"><label>Liên hệ phụ</label><span>${currentLead.phone2 || '—'}</span></div>
-            <div class="info-item"><label>Email</label><span>${currentLead.email}</span></div>
-            <div class="info-item"><label>Website</label><span>${currentLead.website ? '<a href="https://' + currentLead.website + '" target="_blank" style="color:var(--mb-primary)">' + currentLead.website + '</a>' : '—'}</span></div>
-            <div class="info-item"><label>Ngành nghề</label><span>${currentLead.industry}</span></div>
-            <div class="info-item"><label>Số nhân viên</label><span>${currentLead.employees}</span></div>
-            <div class="info-item"><label>Doanh thu/năm</label><span>${currentLead.revenue || '—'}</span></div>
-            <div class="info-item"><label>Năm thành lập</label><span>${currentLead.foundedYear || '—'}</span></div>
-            <div class="info-item"><label>Nguồn</label><span>${currentLead.source}</span></div>
-            <div class="info-item"><label>Người phụ trách</label><span>${currentLead.assignedTo || '—'}</span></div>
-            <div class="info-item"><label>Đánh giá</label><span style="color:${starsColor};font-size:16px;letter-spacing:2px">${stars}</span></div>
-            <div class="info-item"><label>Lịch follow-up</label><span style="${currentLead.nextFollowUp ? 'color:var(--mb-primary);font-weight:600' : ''}">${currentLead.nextFollowUp ? formatDate(currentLead.nextFollowUp) : 'Chưa hẹn'}</span></div>
-            <div class="info-item"><label>Phí BH ước tính</label><span style="color:var(--mb-success);font-weight:700">${currentLead.premiumEstimate ? fmt(currentLead.premiumEstimate) : '—'}</span></div>
-            <div class="info-item"><label>Giá trị HĐ</label><span style="color:var(--mb-warning);font-weight:700">${currentLead.contractValue ? fmt(currentLead.contractValue) : '—'}</span></div>
-            <div class="info-item" style="grid-column:1/-1"><label>Địa chỉ</label><span>${currentLead.address}</span></div>
+            <div class="info-item"><span class="info-label">MÃ KH</span><span class="info-value">${currentLead.id}</span></div>
+            <div class="info-item"><span class="info-label">MÃ SỐ THUẾ</span><span class="info-value">${currentLead.taxCode}</span></div>
+            <div class="info-item"><span class="info-label">NGƯỜI ĐẠI DIỆN</span><span class="info-value">${currentLead.representative}</span></div>
+            <div class="info-item"><span class="info-label">CHỨC VỤ</span><span class="info-value">${currentLead.position || '—'}</span></div>
+            <div class="info-item"><span class="info-label">ĐIỆN THOẠI</span><span class="info-value">${currentLead.phone}</span></div>
+            <div class="info-item"><span class="info-label">LIÊN HỆ PHỤ</span><span class="info-value">${currentLead.phone2 || '—'}</span></div>
+            <div class="info-item"><span class="info-label">EMAIL</span><span class="info-value">${currentLead.email}</span></div>
+            <div class="info-item"><span class="info-label">WEBSITE</span><span class="info-value">${currentLead.website || '—'}</span></div>
+            <div class="info-item"><span class="info-label">NGÀNH NGHỀ</span><span class="info-value">${currentLead.industry}</span></div>
+            <div class="info-item"><span class="info-label">SỐ NHÂN VIÊN</span><span class="info-value">${currentLead.employees}</span></div>
+            <div class="info-item"><span class="info-label">DOANH THU/NĂM</span><span class="info-value">${currentLead.revenue || '—'}</span></div>
+            <div class="info-item"><span class="info-label">NĂM THÀNH LẬP</span><span class="info-value">${currentLead.foundedYear || '—'}</span></div>
+            <div class="info-item"><span class="info-label">NGUỒN</span><span class="info-value">${currentLead.source}</span></div>
+            <div class="info-item"><span class="info-label">NGƯỜI PHỤ TRÁCH</span><span class="info-value">${currentLead.assignedTo || '—'}</span></div>
+            <div class="info-item"><span class="info-label">ĐÁNH GIÁ</span><span class="info-value" style="color:#F59E0B">${stars}</span></div>
+            <div class="info-item"><span class="info-label">LỊCH FOLLOW-UP</span><span class="info-value" style="color:var(--mb-primary)">${currentLead.nextFollowUp ? formatDate(currentLead.nextFollowUp) : '—'}</span></div>
+            <div class="info-item"><span class="info-label">PHÍ BH ƯỚC TÍNH</span><span class="info-value" style="color:var(--mb-success);font-weight:700">₫${fmt(currentLead.premiumEstimate || 0)}</span></div>
+            <div class="info-item"><span class="info-label">GIÁ TRỊ HĐ</span><span class="info-value">${currentLead.contractValue ? '₫' + fmt(currentLead.contractValue) : '—'}</span></div>
+            <div class="info-item" style="grid-column:1/-1"><span class="info-label">ĐỊA CHỈ</span><span class="info-value">${currentLead.address}</span></div>
         `;
 
         renderInteractions();
-        renderProducts();
-        document.getElementById('leadNotes').value = currentLead.notes || '';
+        renderStakeholders();
+        renderLAList();
+        renderSuggestions();
+        renderPayment();
 
         // Reset to first tab
-        switchDetailTab('info', document.querySelector('.tab-btn'));
-        navigateTo('lead-detail');
-    };
+        switchDetailTab('info', document.querySelector('.detail-tabs .tab-btn'));
+    }
 
-    function renderInteractions() {
-        const timeline = document.getElementById('interactionTimeline');
-        const interactions = MOCK_INTERACTIONS[currentLead.id] || [];
-        if (interactions.length === 0) {
-            timeline.innerHTML = '<p style="color:var(--mb-muted);padding:16px">Chưa có lịch sử tương tác. Nhấn "+ Thêm tương tác" để bắt đầu.</p>';
+    // ===== STAKEHOLDERS TAB =====
+    function renderStakeholders() {
+        if (!currentLead) return;
+        const list = MOCK_STAKEHOLDERS[currentLead.id] || [];
+        const container = document.getElementById('stakeholdersList');
+        if (!list.length) {
+            container.innerHTML = '<p style="color:var(--mb-muted);text-align:center;padding:40px">Chưa có stakeholder nào. Nhấn "+ Thêm stakeholder" để bắt đầu.</p>';
             return;
         }
-        timeline.innerHTML = interactions.map(i => `
-            <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-header">
-                        <span class="timeline-type">${i.type}</span>
-                        <span class="timeline-date">${formatDate(i.date)}</span>
+        container.innerHTML = `<div class="stakeholder-grid">${list.map(s => `
+            <div class="stakeholder-card ${s.isPrimary ? 'stakeholder-primary' : ''}">
+                <div class="stakeholder-name">${s.name} ${s.isPrimary ? '<span style="color:var(--mb-primary);font-size:11px">(Chính)</span>' : ''}</div>
+                <div class="stakeholder-role">${s.role}</div>
+                <div class="stakeholder-contact">
+                    <span>📞 ${s.phone}</span>
+                    ${s.email ? `<span>✉️ ${s.email}</span>` : ''}
+                </div>
+            </div>
+        `).join('')}</div>`;
+    }
+
+    function openAddStakeholder() {
+        document.getElementById('modalTitle').textContent = 'Thêm Stakeholder';
+        document.getElementById('modalBody').innerHTML = `
+            <form onsubmit="return saveStakeholder(event)">
+                <div class="form-group"><label>Họ tên</label><input type="text" id="shName" required></div>
+                <div class="form-group"><label>Vai trò</label><input type="text" id="shRole" placeholder="VD: HR Manager, CFO" required></div>
+                <div class="form-group"><label>Điện thoại</label><input type="text" id="shPhone" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="shEmail"></div>
+                <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="shPrimary"> Liên hệ chính</label></div>
+                <button type="submit" class="btn btn-primary btn-full">Lưu</button>
+            </form>`;
+        document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+
+    function saveStakeholder(e) {
+        e.preventDefault();
+        if (!currentLead) return false;
+        if (!MOCK_STAKEHOLDERS[currentLead.id]) MOCK_STAKEHOLDERS[currentLead.id] = [];
+        MOCK_STAKEHOLDERS[currentLead.id].push({
+            name: document.getElementById('shName').value,
+            role: document.getElementById('shRole').value,
+            phone: document.getElementById('shPhone').value,
+            email: document.getElementById('shEmail').value,
+            isPrimary: document.getElementById('shPrimary').checked,
+        });
+        closeModal();
+        renderStakeholders();
+        showToast('Đã thêm stakeholder');
+        return false;
+    }
+
+    // ===== LA LIST TAB =====
+    function renderLAList() {
+        if (!currentLead) return;
+        const list = MOCK_LA_LIST[currentLead.id] || [];
+        const container = document.getElementById('laListContent');
+        if (!list.length) {
+            container.innerHTML = `<p style="color:var(--mb-muted);text-align:center;padding:20px">Chưa có nhân viên/LA nào.</p>
+                <div class="la-import-banner">📥 Import danh sách từ Excel để bắt đầu</div>`;
+            return;
+        }
+        // Summary bar
+        const statusCounts = {};
+        list.forEach(la => { statusCounts[la.status] = (statusCounts[la.status] || 0) + 1; });
+        const summaryHTML = Object.entries(statusCounts).map(([s, c]) =>
+            `<span class="la-status" style="background:${LA_STATUS_COLORS[s]}20;color:${LA_STATUS_COLORS[s]}">${s}: ${c}</span>`
+        ).join(' ');
+
+        container.innerHTML = `
+            <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap">${summaryHTML}</div>
+            <div class="table-responsive">
+                <table class="data-table la-table">
+                    <thead><tr><th>#</th><th>Họ tên</th><th>Ngày sinh</th><th>Chức vụ</th><th>Gói BH</th><th>STBH</th><th>Phí BH</th><th>Trạng thái</th></tr></thead>
+                    <tbody>${list.map((la, i) => `<tr>
+                        <td>${i + 1}</td><td><strong>${la.name}</strong></td>
+                        <td>${formatDate(la.dob)}</td><td>${la.position}</td>
+                        <td>${la.product}</td><td>₫${fmt(la.sumAssured)}</td><td>₫${fmt(la.premium)}/năm</td>
+                        <td><span class="la-status" style="background:${LA_STATUS_COLORS[la.status]}20;color:${LA_STATUS_COLORS[la.status]}">${la.status}</span></td>
+                    </tr>`).join('')}</tbody>
+                </table>
+            </div>`;
+    }
+
+    function openAddLA() {
+        document.getElementById('modalTitle').textContent = 'Thêm người được bảo hiểm (LA)';
+        document.getElementById('modalBody').innerHTML = `
+            <form onsubmit="return saveLA(event)">
+                <div class="form-group"><label>Họ tên</label><input type="text" id="laName" required></div>
+                <div class="form-group"><label>Ngày sinh</label><input type="date" id="laDob" required></div>
+                <div class="form-group"><label>Chức vụ</label><input type="text" id="laPosition" required></div>
+                <div class="form-group"><label>Gói BH</label><select id="laProduct">${PRODUCTS.map(p => `<option value="${p.name}">${p.name}</option>`).join('')}</select></div>
+                <div class="form-group"><label>Số tiền BH (VNĐ)</label><input type="number" id="laSumAssured" value="500000000"></div>
+                <button type="submit" class="btn btn-primary btn-full">Lưu</button>
+            </form>`;
+        document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+
+    function saveLA(e) {
+        e.preventDefault();
+        if (!currentLead) return false;
+        if (!MOCK_LA_LIST[currentLead.id]) MOCK_LA_LIST[currentLead.id] = [];
+        const product = PRODUCTS.find(p => p.name === document.getElementById('laProduct').value);
+        MOCK_LA_LIST[currentLead.id].push({
+            id: 'LA' + (Date.now() % 10000),
+            name: document.getElementById('laName').value,
+            dob: document.getElementById('laDob').value,
+            position: document.getElementById('laPosition').value,
+            product: product.name,
+            sumAssured: parseInt(document.getElementById('laSumAssured').value),
+            premium: product.basePremium,
+            status: 'Chưa nộp',
+        });
+        closeModal();
+        renderLAList();
+        showToast('Đã thêm người được bảo hiểm');
+        return false;
+    }
+
+    function simulateExcelImport() {
+        if (!currentLead) return;
+        if (!MOCK_LA_LIST[currentLead.id]) MOCK_LA_LIST[currentLead.id] = [];
+        const names = ['Nguyễn Văn Phong', 'Trần Thị Hoa', 'Lê Đình Khôi', 'Phạm Thúy An', 'Vũ Quang Minh'];
+        names.forEach((name, i) => {
+            MOCK_LA_LIST[currentLead.id].push({
+                id: 'LA' + (Date.now() % 10000 + i),
+                name, dob: `199${i}-0${i + 1}-15`, position: 'Nhân viên',
+                product: PRODUCTS[i % PRODUCTS.length].name,
+                sumAssured: 500000000, premium: PRODUCTS[i % PRODUCTS.length].basePremium, status: 'Chưa nộp',
+            });
+        });
+        renderLAList();
+        showToast(`Đã import ${names.length} nhân viên từ Excel`, 'success');
+    }
+
+    // ===== PRODUCT SUGGESTION TAB =====
+    let selectedNeeds = [];
+    function renderSuggestions() {
+        const container = document.getElementById('suggestContent');
+        const needsList = PRODUCT_RULES.map(r => r.need);
+        container.innerHTML = `
+            <div class="suggest-wizard">
+                <div class="suggest-section">
+                    <h4>Nhu cầu bảo vệ của doanh nghiệp</h4>
+                    <div class="suggest-options" id="needOptions">
+                        ${needsList.map(n => `<button class="suggest-option" onclick="toggleNeed('${n}', this)">${n}</button>`).join('')}
                     </div>
-                    <div class="timeline-text">${i.content}</div>
-                    <div class="timeline-text" style="margin-top:4px;color:var(--mb-primary);font-weight:500">→ ${i.result}</div>
+                </div>
+                <div class="suggest-results" id="suggestResults">
+                    <p style="color:var(--mb-muted)">Chọn nhu cầu để xem gợi ý sản phẩm phù hợp</p>
+                </div>
+            </div>`;
+    }
+
+    function toggleNeed(need, el) {
+        el.classList.toggle('active');
+        if (selectedNeeds.includes(need)) {
+            selectedNeeds = selectedNeeds.filter(n => n !== need);
+        } else {
+            selectedNeeds.push(need);
+        }
+        updateSuggestions();
+    }
+
+    function updateSuggestions() {
+        const container = document.getElementById('suggestResults');
+        if (!selectedNeeds.length) {
+            container.innerHTML = '<p style="color:var(--mb-muted)">Chọn nhu cầu để xem gợi ý sản phẩm phù hợp</p>';
+            return;
+        }
+        const matchedProductIds = new Set();
+        selectedNeeds.forEach(need => {
+            const rule = PRODUCT_RULES.find(r => r.need === need);
+            if (rule) rule.products.forEach(pid => matchedProductIds.add(pid));
+        });
+        const matched = PRODUCTS.filter(p => matchedProductIds.has(p.id));
+        const icons = { P1: '🛡️', P2: '💖', P3: '🏥', P4: '📈' };
+        container.innerHTML = matched.map(p => `
+            <div class="suggest-product-card">
+                <div class="suggest-product-icon">${icons[p.id] || '📋'}</div>
+                <div class="suggest-product-info">
+                    <h4>${p.name}</h4>
+                    <p>${p.desc}</p>
+                </div>
+                <div class="suggest-product-price">₫${fmt(p.basePremium)}/người/năm</div>
+            </div>
+        `).join('');
+    }
+
+    // ===== INTERACTIONS =====
+    function renderInteractions() {
+        if (!currentLead) return;
+        const list = MOCK_INTERACTIONS[currentLead.id] || [];
+        const container = document.getElementById('interactionTimeline');
+        if (!list.length) {
+            container.innerHTML = '<p style="color:var(--mb-muted);text-align:center;padding:40px">Chưa có lịch sử tương tác.</p>';
+            return;
+        }
+        const icons = { 'Gặp mặt': '🤝', 'Gọi điện': '📞', 'Email': '✉️' };
+        container.innerHTML = list.map(i => `
+            <div class="timeline-entry">
+                <div class="timeline-marker">${icons[i.type] || '📌'}</div>
+                <div class="timeline-content">
+                    <div class="timeline-header"><strong>${i.type}</strong><span class="timeline-date">${formatDate(i.date)}</span></div>
+                    <p>${i.content}</p>
+                    ${i.result ? `<p class="timeline-result"><em>→ ${i.result}</em></p>` : ''}
                 </div>
             </div>
         `).join('');
     }
 
-    function renderProducts() {
-        const grid = document.getElementById('productsGrid');
-        grid.innerHTML = PRODUCTS.map(p => `
-            <div class="product-interest-card">
-                <h4>${p.name}</h4>
-                <p>${p.desc}</p>
-                <p style="margin-top:8px;font-weight:600;color:var(--mb-primary)">Phí cơ bản: ${fmt(p.basePremium)}/người/năm</p>
-            </div>
-        `).join('');
+    function openAddInteraction() {
+        document.getElementById('modalTitle').textContent = 'Thêm tương tác';
+        document.getElementById('modalBody').innerHTML = `
+            <form onsubmit="return saveInteraction(event)">
+                <div class="form-group"><label>Loại</label><select id="intType"><option>Gặp mặt</option><option>Gọi điện</option><option>Email</option></select></div>
+                <div class="form-group"><label>Nội dung</label><textarea id="intContent" rows="3" required></textarea></div>
+                <div class="form-group"><label>Kết quả</label><input type="text" id="intResult"></div>
+                <button type="submit" class="btn btn-primary btn-full">Lưu</button>
+            </form>`;
+        document.getElementById('modalOverlay').classList.remove('hidden');
     }
 
-    window.switchDetailTab = function (tab, btn) {
+    function saveInteraction(e) {
+        e.preventDefault();
+        if (!currentLead) return false;
+        if (!MOCK_INTERACTIONS[currentLead.id]) MOCK_INTERACTIONS[currentLead.id] = [];
+        MOCK_INTERACTIONS[currentLead.id].unshift({
+            type: document.getElementById('intType').value,
+            date: new Date().toISOString().split('T')[0],
+            content: document.getElementById('intContent').value,
+            result: document.getElementById('intResult').value,
+        });
+        closeModal();
+        renderInteractions();
+        showToast('Đã thêm tương tác');
+        return false;
+    }
+
+    // ===== DETAIL TAB SWITCH =====
+    function switchDetailTab(tab, btn) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-        btn.classList.add('active');
-        if (tab === 'payment') renderPayment();
-    };
-
-    window.saveNotes = function () {
-        if (!currentLead) return;
-        currentLead.notes = document.getElementById('leadNotes').value;
-        save();
-    };
-
-    // ===== ADD/EDIT LEAD =====
-    window.openAddLead = function () {
-        document.getElementById('modalTitle').textContent = 'Thêm KHTN Mới';
-        document.getElementById('modalBody').innerHTML = getLeadFormHTML();
-        document.getElementById('modalOverlay').classList.remove('hidden');
-    };
-
-    window.openEditLead = function () {
-        if (!currentLead) return;
-        document.getElementById('modalTitle').textContent = 'Chỉnh sửa KHTN';
-        document.getElementById('modalBody').innerHTML = getLeadFormHTML(currentLead);
-        document.getElementById('modalOverlay').classList.remove('hidden');
-    };
-
-    function getLeadFormHTML(data) {
-        const d = data || {};
-        const revOpts = ['Dưới 10 tỷ', '10-20 tỷ', '20-50 tỷ', '50-100 tỷ', '100-200 tỷ', '200-500 tỷ', '500-1000 tỷ', 'Trên 1000 tỷ'];
-        return `
-            <form onsubmit="return saveLead(event, '${d.id || ''}')" style="max-height:70vh;overflow-y:auto;padding-right:8px">
-                <h4 style="margin:0 0 12px;color:var(--mb-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.5px">Thông tin doanh nghiệp</h4>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Tên doanh nghiệp *</label><input id="fCompany" value="${d.company || ''}" required></div>
-                    <div class="modal-form-group"><label>Mã số thuế</label><input id="fTaxCode" value="${d.taxCode || ''}"></div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Ngành nghề</label><input id="fIndustry" value="${d.industry || ''}"></div>
-                    <div class="modal-form-group"><label>Số nhân viên</label><input type="number" id="fEmployees" value="${d.employees || ''}"></div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Doanh thu/năm</label>
-                        <select id="fRevenue">
-                            <option value="">— Chọn —</option>
-                            ${revOpts.map(r => '<option' + (d.revenue === r ? ' selected' : '') + '>' + r + '</option>').join('')}
-                        </select>
-                    </div>
-                    <div class="modal-form-group"><label>Năm thành lập</label><input type="number" id="fFoundedYear" value="${d.foundedYear || ''}" min="1900" max="2026"></div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Website</label><input id="fWebsite" value="${d.website || ''}" placeholder="example.com.vn"></div>
-                    <div class="modal-form-group"><label>Địa chỉ</label><input id="fAddress" value="${d.address || ''}"></div>
-                </div>
-
-                <h4 style="margin:16px 0 12px;color:var(--mb-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.5px">Thông tin liên hệ</h4>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Người đại diện *</label><input id="fRep" value="${d.representative || ''}" required></div>
-                    <div class="modal-form-group"><label>Chức vụ</label><input id="fPosition" value="${d.position || ''}" placeholder="VD: Giám đốc nhân sự"></div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Điện thoại *</label><input id="fPhone" value="${d.phone || ''}" required></div>
-                    <div class="modal-form-group"><label>Liên hệ phụ</label><input id="fPhone2" value="${d.phone2 || ''}" placeholder="SĐT phụ hoặc bàn"></div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Email</label><input type="email" id="fEmail" value="${d.email || ''}"></div>
-                    <div class="modal-form-group"><label>Nguồn</label>
-                        <select id="fSource">
-                            <option ${d.source === 'Website' ? 'selected' : ''}>Website</option>
-                            <option ${d.source === 'Giới thiệu' ? 'selected' : ''}>Giới thiệu</option>
-                            <option ${d.source === 'Cold call' ? 'selected' : ''}>Cold call</option>
-                            <option ${d.source === 'Triển lãm' ? 'selected' : ''}>Triển lãm</option>
-                            <option ${d.source === 'Sự kiện' ? 'selected' : ''}>Sự kiện</option>
-                            <option ${d.source === 'Đối tác' ? 'selected' : ''}>Đối tác</option>
-                            <option ${d.source === 'Referral' ? 'selected' : ''}>Referral</option>
-                        </select>
-                    </div>
-                </div>
-
-                <h4 style="margin:16px 0 12px;color:var(--mb-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.5px">Quản lý & Đánh giá</h4>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Người phụ trách</label>
-                        <select id="fAssignedTo">
-                            <option value="">— Chọn —</option>
-                            <option ${d.assignedTo === 'Nguyễn Hải Đăng' ? 'selected' : ''}>Nguyễn Hải Đăng</option>
-                            <option ${d.assignedTo === 'Lê Thị Hương' ? 'selected' : ''}>Lê Thị Hương</option>
-                            <option ${d.assignedTo === 'Trần Minh Quân' ? 'selected' : ''}>Trần Minh Quân</option>
-                        </select>
-                    </div>
-                    <div class="modal-form-group"><label>Đánh giá (1-5)</label>
-                        <select id="fRating">
-                            ${[1, 2, 3, 4, 5].map(r => '<option value="' + r + '"' + (d.rating == r ? ' selected' : '') + '>' + '★'.repeat(r) + ' (' + r + ')</option>').join('')}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Lịch follow-up</label><input type="date" id="fNextFollowUp" value="${d.nextFollowUp || ''}"></div>
-                    <div class="modal-form-group"><label>Phí BH ước tính (VNĐ)</label><input type="number" id="fPremiumEstimate" value="${d.premiumEstimate || ''}" step="1000000"></div>
-                </div>
-
-                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:16px">
-                    <button type="button" class="btn btn-ghost" onclick="closeModal()">Hủy</button>
-                    <button type="submit" class="btn btn-primary">${d.id ? 'Cập nhật' : 'Thêm mới'}</button>
-                </div>
-            </form>
-        `;
+        const pane = document.getElementById('tab-' + tab);
+        if (pane) pane.classList.add('active');
+        if (btn) btn.classList.add('active');
     }
 
-    window.saveLead = function (e, editId) {
+    // ===== ADD/EDIT LEAD =====
+    function openAddLead() {
+        document.getElementById('modalTitle').textContent = 'Thêm doanh nghiệp';
+        document.getElementById('modalBody').innerHTML = getLeadFormHTML({});
+        document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+
+    function openEditLead() {
+        if (!currentLead) return;
+        document.getElementById('modalTitle').textContent = 'Chỉnh sửa';
+        document.getElementById('modalBody').innerHTML = getLeadFormHTML(currentLead);
+        document.getElementById('modalOverlay').classList.remove('hidden');
+    }
+
+    function getLeadFormHTML(data) {
+        const statusOptions = ENTERPRISE_STATUSES.concat(['Từ chối', 'Ngừng theo dõi']).map(s =>
+            `<option value="${s}" ${data.status === s ? 'selected' : ''}>${s}</option>`
+        ).join('');
+        return `<form onsubmit="return saveLead(event, '${data.id || ''}')" style="max-height:70vh;overflow-y:auto">
+            <h4 style="margin-bottom:12px;color:var(--mb-primary)">Thông tin doanh nghiệp</h4>
+            <div class="form-group"><label>Tên DN</label><input type="text" id="fCompany" value="${data.company || ''}" required></div>
+            <div class="form-group"><label>Mã số thuế</label><input type="text" id="fTaxCode" value="${data.taxCode || ''}"></div>
+            <div class="form-group"><label>Ngành nghề</label><input type="text" id="fIndustry" value="${data.industry || ''}"></div>
+            <div class="form-group"><label>Số nhân viên</label><input type="number" id="fEmployees" value="${data.employees || ''}"></div>
+            <div class="form-group"><label>Doanh thu/năm</label><input type="text" id="fRevenue" value="${data.revenue || ''}"></div>
+            <div class="form-group"><label>Năm thành lập</label><input type="number" id="fFounded" value="${data.foundedYear || ''}"></div>
+            <div class="form-group"><label>Website</label><input type="text" id="fWebsite" value="${data.website || ''}"></div>
+            <div class="form-group"><label>Địa chỉ</label><input type="text" id="fAddress" value="${data.address || ''}"></div>
+            <h4 style="margin:16px 0 12px;color:var(--mb-primary)">Liên hệ</h4>
+            <div class="form-group"><label>Người đại diện</label><input type="text" id="fRep" value="${data.representative || ''}" required></div>
+            <div class="form-group"><label>Chức vụ</label><input type="text" id="fPosition" value="${data.position || ''}"></div>
+            <div class="form-group"><label>Điện thoại</label><input type="text" id="fPhone" value="${data.phone || ''}" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="fEmail" value="${data.email || ''}"></div>
+            <h4 style="margin:16px 0 12px;color:var(--mb-primary)">Quản lý</h4>
+            <div class="form-group"><label>Trạng thái</label><select id="fStatus">${statusOptions}</select></div>
+            <div class="form-group"><label>Nguồn</label><input type="text" id="fSource" value="${data.source || ''}"></div>
+            <div class="form-group"><label>Người phụ trách</label><select id="fAssigned">${SALES_TEAM.map(s => `<option value="${s.name}" ${data.assignedTo === s.name ? 'selected' : ''}>${s.name}</option>`).join('')}</select></div>
+            <div class="form-group"><label>Phí BH ước tính (VNĐ)</label><input type="number" id="fPremium" value="${data.premiumEstimate || ''}"></div>
+            <button type="submit" class="btn btn-primary btn-full" style="margin-top:16px">Lưu</button>
+        </form>`;
+    }
+
+    function saveLead(e, editId) {
         e.preventDefault();
         const data = {
             company: document.getElementById('fCompany').value,
             taxCode: document.getElementById('fTaxCode').value,
-            representative: document.getElementById('fRep').value,
-            position: document.getElementById('fPosition').value,
-            phone: document.getElementById('fPhone').value,
-            phone2: document.getElementById('fPhone2').value,
-            email: document.getElementById('fEmail').value,
             industry: document.getElementById('fIndustry').value,
             employees: parseInt(document.getElementById('fEmployees').value) || 0,
             revenue: document.getElementById('fRevenue').value,
-            foundedYear: parseInt(document.getElementById('fFoundedYear').value) || '',
+            foundedYear: parseInt(document.getElementById('fFounded').value) || 0,
             website: document.getElementById('fWebsite').value,
-            source: document.getElementById('fSource').value,
             address: document.getElementById('fAddress').value,
-            assignedTo: document.getElementById('fAssignedTo').value,
-            rating: parseInt(document.getElementById('fRating').value) || 3,
-            nextFollowUp: document.getElementById('fNextFollowUp').value,
-            premiumEstimate: parseInt(document.getElementById('fPremiumEstimate').value) || 0,
+            representative: document.getElementById('fRep').value,
+            position: document.getElementById('fPosition').value,
+            phone: document.getElementById('fPhone').value,
+            email: document.getElementById('fEmail').value,
+            status: document.getElementById('fStatus').value,
+            source: document.getElementById('fSource').value,
+            assignedTo: document.getElementById('fAssigned').value,
+            premiumEstimate: parseInt(document.getElementById('fPremium').value) || 0,
         };
-
         if (editId) {
-            const lead = leads.find(l => l.id === editId);
-            Object.assign(lead, data);
-            showToast('Đã cập nhật KHTN', 'success');
-            if (currentLead && currentLead.id === editId) viewLead(editId);
+            const idx = leads.findIndex(l => l.id === editId);
+            if (idx >= 0) leads[idx] = { ...leads[idx], ...data };
         } else {
-            const newId = 'KH' + String(leads.length + 1).padStart(3, '0');
-            leads.push({ id: newId, ...data, status: 'Mới', createdAt: new Date().toISOString().split('T')[0], notes: '' });
-            showToast('Đã thêm KHTN mới', 'success');
+            data.id = 'KH' + String(leads.length + 1).padStart(3, '0');
+            data.createdAt = new Date().toISOString().split('T')[0];
+            data.rating = 3; data.phone2 = ''; data.nextFollowUp = ''; data.contractValue = 0; data.notes = '';
+            leads.push(data);
         }
-
         save();
         closeModal();
-        renderLeadsTable();
-        updateDashboard();
-        updateWelcomeHero();
-        renderPipeline();
-        renderRecentLeads();
-        updateLeadBadge();
-        if (!editId) navigateTo('leads');
+        if (editId && currentLead) viewLead(editId);
+        else { navigateTo('leads'); }
+        showToast(editId ? 'Đã cập nhật' : 'Đã thêm doanh nghiệp', 'success');
         return false;
-    };
+    }
 
     // ===== STATUS UPDATE =====
-    window.openStatusUpdate = function () {
+    function openStatusUpdate() {
         if (!currentLead) return;
-        const statuses = Object.keys(STATUS_MAP);
         document.getElementById('modalTitle').textContent = 'Cập nhật trạng thái';
+        const allStatuses = ENTERPRISE_STATUSES.concat(['Từ chối', 'Ngừng theo dõi']);
         document.getElementById('modalBody').innerHTML = `
             <form onsubmit="return saveStatus(event)">
-                <div class="modal-form-group">
-                    <label>Trạng thái hiện tại</label>
-                    <span class="status-badge ${STATUS_MAP[currentLead.status]}" style="display:inline-flex">${currentLead.status}</span>
+                <p style="margin-bottom:16px">Chọn trạng thái mới cho <strong>${currentLead.company}</strong></p>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    ${allStatuses.map(s => `
+                        <label class="radio-option" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border:2px solid ${currentLead.status === s ? STATUS_COLORS[s] || '#ddd' : '#E2E8F0'};border-radius:10px;cursor:pointer;transition:0.15s">
+                            <input type="radio" name="newStatus" value="${s}" ${currentLead.status === s ? 'checked' : ''}>
+                            <span class="status-badge ${STATUS_MAP[s] || ''}">${s}</span>
+                        </label>
+                    `).join('')}
                 </div>
-                <div class="modal-form-group">
-                    <label>Trạng thái mới *</label>
-                    <select id="fNewStatus" required>
-                        ${statuses.map(s => `<option ${s === currentLead.status ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select>
-                </div>
-                <div class="modal-form-group">
-                    <label>Lý do chuyển</label>
-                    <textarea id="fStatusReason" rows="3" placeholder="Nhập lý do..."></textarea>
-                </div>
-                <div class="modal-form-group">
-                    <label>Ngày liên hệ tiếp</label>
-                    <input type="date" id="fFollowUp">
-                </div>
-                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px">
-                    <button type="button" class="btn btn-ghost" onclick="closeModal()">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Cập nhật</button>
-                </div>
-            </form>
-        `;
+                <button type="submit" class="btn btn-primary btn-full" style="margin-top:16px">Cập nhật</button>
+            </form>`;
         document.getElementById('modalOverlay').classList.remove('hidden');
-    };
+    }
 
-    window.saveStatus = function (e) {
+    function saveStatus(e) {
         e.preventDefault();
-        const newStatus = document.getElementById('fNewStatus').value;
-        currentLead.status = newStatus;
+        const selected = document.querySelector('input[name="newStatus"]:checked');
+        if (!selected || !currentLead) return false;
+        currentLead.status = selected.value;
         save();
         closeModal();
         viewLead(currentLead.id);
-        renderLeadsTable();
-        updateDashboard();
-        renderPipeline();
-        renderRecentLeads();
-        updateLeadBadge();
-        updateWelcomeHero();
         showToast('Đã cập nhật trạng thái', 'success');
         return false;
-    };
-
-    // ===== ADD INTERACTION =====
-    window.openAddInteraction = function () {
-        document.getElementById('modalTitle').textContent = 'Thêm Tương tác';
-        document.getElementById('modalBody').innerHTML = `
-            <form onsubmit="return saveInteraction(event)">
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Loại *</label>
-                        <select id="fIntType"><option>Gọi điện</option><option>Gặp mặt</option><option>Email</option><option>Khác</option></select>
-                    </div>
-                    <div class="modal-form-group"><label>Ngày *</label><input type="date" id="fIntDate" value="${new Date().toISOString().split('T')[0]}" required></div>
-                </div>
-                <div class="modal-form-group"><label>Nội dung *</label><textarea id="fIntContent" rows="3" required placeholder="Mô tả nội dung tương tác..."></textarea></div>
-                <div class="modal-form-group"><label>Kết quả</label><input id="fIntResult" placeholder="Kết quả tương tác"></div>
-                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px">
-                    <button type="button" class="btn btn-ghost" onclick="closeModal()">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu</button>
-                </div>
-            </form>
-        `;
-        document.getElementById('modalOverlay').classList.remove('hidden');
-    };
-
-    window.saveInteraction = function (e) {
-        e.preventDefault();
-        const interaction = {
-            type: document.getElementById('fIntType').value,
-            date: document.getElementById('fIntDate').value,
-            content: document.getElementById('fIntContent').value,
-            result: document.getElementById('fIntResult').value,
-        };
-        if (!MOCK_INTERACTIONS[currentLead.id]) MOCK_INTERACTIONS[currentLead.id] = [];
-        MOCK_INTERACTIONS[currentLead.id].unshift(interaction);
-        closeModal();
-        renderInteractions();
-        showToast('Đã lưu tương tác', 'success');
-        return false;
-    };
-
-    // ===== CONTRACTS =====
-    function renderContracts() {
-        const tbody = document.getElementById('contractsTableBody');
-        tbody.innerHTML = contracts.map(c => `
-            <tr>
-                <td><strong>${c.id}</strong></td>
-                <td>${c.company}</td>
-                <td>${c.product}</td>
-                <td>${fmt(c.premium)}</td>
-                <td><span class="status-badge ${c.status === 'Đã phát hành' ? 's-issued' : c.status === 'Chờ duyệt' ? 's-pending' : 's-new'}">${c.status}</span></td>
-                <td>${formatDate(c.createdAt)}</td>
-                <td>
-                    <button class="action-btn" title="Xem chi tiết">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
     }
 
-    window.filterContracts = function () {
-        const q = document.getElementById('contractSearch').value.toLowerCase();
-        const filtered = contracts.filter(c => c.company.toLowerCase().includes(q) || c.id.toLowerCase().includes(q) || c.product.toLowerCase().includes(q));
-        const tbody = document.getElementById('contractsTableBody');
-        tbody.innerHTML = filtered.map(c => `
-            <tr>
-                <td><strong>${c.id}</strong></td>
-                <td>${c.company}</td>
-                <td>${c.product}</td>
-                <td>${fmt(c.premium)}</td>
-                <td><span class="status-badge ${c.status === 'Đã phát hành' ? 's-issued' : c.status === 'Chờ duyệt' ? 's-pending' : 's-new'}">${c.status}</span></td>
-                <td>${formatDate(c.createdAt)}</td>
-                <td><button class="action-btn" title="Xem"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></td>
-            </tr>
-        `).join('');
-    };
-
-    // ===== CONTRACT WIZARD =====
-    window.openNewContract = function () {
-        wizardStep = 1;
-        wizardData = { leadId: '', product: '', insured: [] };
-        updateWizardUI();
-        document.getElementById('contractWizard').classList.remove('hidden');
-    };
-
-    window.closeContractWizard = function () {
-        document.getElementById('contractWizard').classList.add('hidden');
-    };
-
-    window.wizardNextStep = function () {
-        if (wizardStep === 1) {
-            const sel = document.getElementById('wLeadSelect');
-            if (sel && !sel.value) { showToast('Vui lòng chọn KHTN', 'error'); return; }
-            if (sel) wizardData.leadId = sel.value;
-        }
-        if (wizardStep === 2) {
-            const selected = document.querySelector('.product-card.selected');
-            if (!selected) { showToast('Vui lòng chọn sản phẩm', 'error'); return; }
-            wizardData.product = selected.dataset.name;
-            wizardData.effectiveDate = document.getElementById('wEffDate')?.value || '';
-            wizardData.term = document.getElementById('wTerm')?.value || '1';
-            wizardData.insuredCount = document.getElementById('wInsuredCount')?.value || '1';
-        }
-        if (wizardStep === 4) {
-            // Submit
-            const lead = leads.find(l => l.id === wizardData.leadId);
-            const product = PRODUCTS.find(p => p.name === wizardData.product);
-            const premium = (product ? product.basePremium : 1500000) * parseInt(wizardData.insuredCount || 1);
-            const newC = {
-                id: 'HD' + String(contracts.length + 1).padStart(3, '0'),
-                leadId: wizardData.leadId,
-                company: lead ? lead.company : '',
-                product: wizardData.product,
-                premium: premium,
-                status: 'Chờ duyệt',
-                effectiveDate: wizardData.effectiveDate,
-                term: parseInt(wizardData.term),
-                insuredCount: parseInt(wizardData.insuredCount || 1),
-                createdAt: new Date().toISOString().split('T')[0],
-            };
-            contracts.push(newC);
-            save();
-            closeContractWizard();
-            renderContracts();
-            updateDashboard();
-            showToast('Đã tạo hợp đồng thành công!', 'success');
-            return;
-        }
-        if (wizardStep < 4) { wizardStep++; updateWizardUI(); }
-    };
-
-    window.wizardPrevStep = function () {
-        if (wizardStep > 1) { wizardStep--; updateWizardUI(); }
-    };
-
-    function updateWizardUI() {
-        document.querySelectorAll('.wizard-step').forEach(s => {
-            const n = parseInt(s.dataset.step);
-            s.classList.toggle('active', n === wizardStep);
-            s.classList.toggle('done', n < wizardStep);
-        });
-        document.getElementById('wizardPrev').style.display = wizardStep > 1 ? '' : 'none';
-        document.getElementById('wizardNext').textContent = wizardStep === 4 ? 'Nộp hồ sơ' : 'Tiếp theo';
-
-        const body = document.getElementById('wizardBody');
-        if (wizardStep === 1) {
-            body.innerHTML = `
-                <div class="modal-form-group">
-                    <label>Chọn KHTN Doanh nghiệp *</label>
-                    <select id="wLeadSelect" style="width:100%;padding:10px;border:1.5px solid var(--mb-border);border-radius:var(--radius)">
-                        <option value="">-- Chọn khách hàng --</option>
-                        ${leads.filter(l => l.status !== 'Từ chối' && l.status !== 'Ngừng theo dõi').map(l => `<option value="${l.id}" ${wizardData.leadId === l.id ? 'selected' : ''}>${l.id} — ${l.company}</option>`).join('')}
-                    </select>
-                </div>
-                <div id="wLeadPreview" style="margin-top:16px"></div>
-            `;
-            const sel = document.getElementById('wLeadSelect');
-            sel.addEventListener('change', () => {
-                const lead = leads.find(l => l.id === sel.value);
-                const preview = document.getElementById('wLeadPreview');
-                if (lead) {
-                    preview.innerHTML = `
-                        <div class="info-grid" style="background:var(--mb-bg);padding:16px;border-radius:var(--radius)">
-                            <div class="info-item"><label>Doanh nghiệp</label><span>${lead.company}</span></div>
-                            <div class="info-item"><label>MST</label><span>${lead.taxCode}</span></div>
-                            <div class="info-item"><label>Người đại diện</label><span>${lead.representative}</span></div>
-                            <div class="info-item"><label>SĐT</label><span>${lead.phone}</span></div>
-                        </div>
-                    `;
-                } else preview.innerHTML = '';
-            });
-            if (wizardData.leadId) sel.dispatchEvent(new Event('change'));
-        } else if (wizardStep === 2) {
-            body.innerHTML = `
-                <div class="modal-form-group"><label>Chọn sản phẩm bảo hiểm *</label></div>
-                <div class="product-cards">
-                    ${PRODUCTS.map(p => `
-                        <div class="product-card ${wizardData.product === p.name ? 'selected' : ''}" data-name="${p.name}" onclick="selectProduct(this)">
-                            <h4>${p.name}</h4>
-                            <p>${p.desc}</p>
-                            <p style="margin-top:8px;font-weight:600;color:var(--mb-primary)">${fmt(p.basePremium)}/người/năm</p>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="modal-form-row" style="margin-top:16px">
-                    <div class="modal-form-group"><label>Ngày hiệu lực</label><input type="date" id="wEffDate" value="${wizardData.effectiveDate || ''}"></div>
-                    <div class="modal-form-group"><label>Thời hạn (năm)</label>
-                        <select id="wTerm">${[1, 2, 3, 5, 10, 15, 20].map(y => `<option value="${y}" ${wizardData.term == y ? 'selected' : ''}>${y} năm</option>`).join('')}</select>
-                    </div>
-                </div>
-                <div class="modal-form-group"><label>Số người tham gia bảo hiểm</label><input type="number" id="wInsuredCount" value="${wizardData.insuredCount || 1}" min="1"></div>
-            `;
-        } else if (wizardStep === 3) {
-            const count = parseInt(wizardData.insuredCount || 1);
-            let rows = '';
-            for (let i = 0; i < Math.min(count, 5); i++) {
-                rows += `<tr><td>${i + 1}</td><td><input placeholder="Họ tên" style="border:1px solid var(--mb-border);padding:6px;border-radius:4px;width:100%"></td><td><input placeholder="Số CCCD" style="border:1px solid var(--mb-border);padding:6px;border-radius:4px;width:100%"></td><td><input type="date" style="border:1px solid var(--mb-border);padding:6px;border-radius:4px"></td></tr>`;
-            }
-            if (count > 5) rows += `<tr><td colspan="4" style="text-align:center;color:var(--mb-muted);padding:12px">... và ${count - 5} người khác (import từ Excel)</td></tr>`;
-            body.innerHTML = `
-                <p style="margin-bottom:12px;color:var(--mb-text-secondary)">Nhập thông tin Người được Bảo hiểm (${count} người)</p>
-                <table class="data-table">
-                    <thead><tr><th>#</th><th>Họ tên</th><th>Số CCCD</th><th>Ngày sinh</th></tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <button class="btn btn-ghost btn-sm" style="margin-top:12px">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Import từ Excel
-                </button>
-            `;
-        } else if (wizardStep === 4) {
-            const lead = leads.find(l => l.id === wizardData.leadId);
-            const product = PRODUCTS.find(p => p.name === wizardData.product);
-            const premium = (product ? product.basePremium : 0) * parseInt(wizardData.insuredCount || 1);
-            body.innerHTML = `
-                <h4 style="margin-bottom:16px;color:var(--mb-primary)">Xác nhận thông tin Hợp đồng</h4>
-                <div class="info-grid" style="background:var(--mb-bg);padding:16px;border-radius:var(--radius)">
-                    <div class="info-item"><label>Doanh nghiệp</label><span>${lead ? lead.company : '—'}</span></div>
-                    <div class="info-item"><label>MST</label><span>${lead ? lead.taxCode : '—'}</span></div>
-                    <div class="info-item"><label>Sản phẩm</label><span>${wizardData.product}</span></div>
-                    <div class="info-item"><label>Thời hạn</label><span>${wizardData.term} năm</span></div>
-                    <div class="info-item"><label>Số NĐBH</label><span>${wizardData.insuredCount} người</span></div>
-                    <div class="info-item"><label>Ngày hiệu lực</label><span>${wizardData.effectiveDate || '—'}</span></div>
-                    <div class="info-item" style="grid-column:1/-1"><label>TỔNG PHÍ BẢO HIỂM</label><span style="font-size:20px;color:var(--mb-primary);font-weight:700">${fmt(premium)}</span></div>
-                </div>
-                <p style="margin-top:16px;color:var(--mb-text-secondary);font-size:13px">Nhấn "Nộp hồ sơ" để gửi cho bộ phận Underwriting duyệt.</p>
-            `;
-        }
+    // ===== SALES MANAGEMENT PAGE =====
+    function renderSalesPage() {
+        renderPipelineKanban();
+        renderSalesTimeline();
     }
 
-    window.selectProduct = function (el) {
-        document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        wizardData.product = el.dataset.name;
-    };
-
-    // ===== NEWS =====
-    function renderNews(filter) {
-        const data = filter ? MOCK_NEWS.filter(n => n.category === filter) : MOCK_NEWS;
-        const featuredContainer = document.getElementById('newsFeatured');
-        const grid = document.getElementById('newsGrid');
-
-        if (data.length === 0) {
-            if (featuredContainer) featuredContainer.innerHTML = '';
-            grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg><h4>Không có tin tức</h4><p>Chưa có bài viết nào trong danh mục này</p></div>';
-            return;
-        }
-
-        // Featured hero (first item)
-        const featured = data[0];
-        if (featuredContainer) {
-            featuredContainer.innerHTML = `
-                <div class="news-featured-hero">
-                    <div class="news-featured-img" style="background:linear-gradient(135deg, ${featured.color}, ${featured.color}CC)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-                    </div>
-                    <div class="news-featured-body">
-                        <span class="news-tag">${featured.category}</span>
-                        <h3>${featured.title}</h3>
-                        <p>${featured.excerpt}</p>
-                        <span class="news-date">${formatDate(featured.date)}</span>
-                    </div>
+    function renderPipelineKanban() {
+        const kanban = document.getElementById('pipelineKanban');
+        kanban.innerHTML = ENTERPRISE_STATUSES.map(status => {
+            const items = leads.filter(l => l.status === status);
+            const color = STATUS_COLORS[status];
+            return `<div class="kanban-column">
+                <div class="kanban-column-header">
+                    <span class="kanban-column-title" style="color:${color}">${status}</span>
+                    <span class="kanban-count">${items.length}</span>
                 </div>
-            `;
-        }
-
-        // Remaining cards
-        const remaining = data.slice(1);
-        grid.innerHTML = remaining.map(n => `
-            <div class="news-card-item">
-                <div class="news-card-img" style="background:linear-gradient(135deg, ${n.color}, ${n.color}CC)">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-                </div>
-                <div class="news-card-body">
-                    <h4>${n.title}</h4>
-                    <p>${n.excerpt}</p>
-                    <div class="news-card-footer">
-                        <span class="news-tag">${n.category}</span>
-                        <span style="font-size:12px;color:var(--mb-muted)">${formatDate(n.date)}</span>
+                ${items.length ? items.map(l => `
+                    <div class="kanban-card" onclick="viewLead('${l.id}')">
+                        <div class="kanban-card-title">${l.company}</div>
+                        <div class="kanban-card-meta">
+                            <span>👤 ${l.representative}</span>
+                            <span>🏢 ${l.industry}</span>
+                            <span>📞 ${l.assignedTo || 'Chưa giao'}</span>
+                        </div>
+                        ${l.premiumEstimate ? `<div class="kanban-card-amount">₫${fmt(l.premiumEstimate)}</div>` : ''}
                     </div>
+                `).join('') : '<p style="color:var(--mb-muted);text-align:center;font-size:13px;padding:20px 0">Trống</p>'}
+            </div>`;
+        }).join('');
+    }
+
+    function renderSalesTimeline() {
+        const container = document.getElementById('salesTimeline');
+        const sorted = [...leads].filter(l => ENTERPRISE_STATUSES.includes(l.status)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        const statusIcons = { 'Tiếp cận': '🔍', 'Đánh giá nhu cầu': '📋', 'Đề xuất': '💡', 'Đàm phán': '🤝', 'Chốt deal': '✅' };
+        container.innerHTML = sorted.map(l => `
+            <div class="timeline-item">
+                <div class="timeline-dot">${statusIcons[l.status] || '📌'}</div>
+                <div class="timeline-body">
+                    <h4>${l.company}</h4>
+                    <p>${l.status} — ${l.assignedTo || 'Chưa giao'}</p>
                 </div>
+                <span class="timeline-date">${formatDate(l.createdAt)}</span>
             </div>
         `).join('');
     }
 
-    window.filterNewsBy = function (category, btn) {
-        document.querySelectorAll('#newsFilterPills .doc-cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderNews(category || null);
-    };
-
-    // ===== DOCUMENTS =====
-    function renderDocuments(category) {
-        const data = category && category !== 'all' ? MOCK_DOCUMENTS.filter(d => d.category === category) : MOCK_DOCUMENTS;
-        const tbody = document.getElementById('docsTableBody');
-        const catLabels = { form: 'Biểu mẫu', product: 'Sản phẩm', process: 'Quy trình', training: 'Đào tạo' };
-        tbody.innerHTML = data.map(d => `
-            <tr>
-                <td>
-                    <div style="display:flex;align-items:center;gap:10px">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${d.type === 'PDF' ? 'var(--mb-accent)' : d.type === 'XLSX' ? 'var(--mb-success)' : 'var(--mb-primary)'}" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        <span style="font-weight:500">${d.name}</span>
-                    </div>
-                </td>
-                <td><span class="news-tag" style="background:${d.type === 'PDF' ? 'var(--mb-accent-light)' : d.type === 'XLSX' ? '#DCFCE7' : 'var(--mb-primary-light)'};color:${d.type === 'PDF' ? 'var(--mb-accent)' : d.type === 'XLSX' ? 'var(--mb-success)' : 'var(--mb-primary)'}">${d.type}</span></td>
-                <td style="color:var(--mb-muted)">${formatDate(d.updated)}</td>
-                <td><button class="doc-download-btn" onclick="showToast('Đang tải ${d.name}...')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Tải về
-                </button></td>
-            </tr>
-        `).join('');
+    function switchSalesView(view) {
+        document.getElementById('salesPipelineView').style.display = view === 'pipeline' ? '' : 'none';
+        document.getElementById('salesTimelineView').style.display = view === 'timeline' ? '' : 'none';
+        document.getElementById('btnPipelineView').classList.toggle('active', view === 'pipeline');
+        document.getElementById('btnTimelineView').classList.toggle('active', view === 'timeline');
     }
-
-    window.filterDocs = function (cat, btn) {
-        document.querySelectorAll('.doc-cat-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        renderDocuments(cat);
-    };
 
     // ===== PAYMENT MODULE =====
     function renderPayment() {
-        const container = document.getElementById('paymentContent');
-        if (!currentLead || !container) return;
-
-        const premium = currentLead.premiumEstimate || 0;
-        const amountStr = fmt(premium);
-
-        container.innerHTML = `
-            <div class="payment-module">
-                <div class="payment-header">
-                    <h3>Thanh toán phí bảo hiểm</h3>
-                    <div class="payment-amount">
-                        <span class="payment-amount-label">Số tiền thanh toán</span>
-                        <span class="payment-amount-value">${amountStr}</span>
-                    </div>
-                </div>
-
-                <div class="payment-methods">
-                    <div class="payment-method-card" onclick="selectPaymentMethod('bank', this)">
-                        <div class="pm-icon">🏦</div>
-                        <div class="pm-info">
-                            <div class="pm-name">Chuyển khoản ngân hàng</div>
-                            <div class="pm-desc">Chuyển khoản qua MB Bank</div>
-                        </div>
-                    </div>
-                    <div class="payment-method-card" onclick="selectPaymentMethod('qr', this)">
-                        <div class="pm-icon">📱</div>
-                        <div class="pm-info">
-                            <div class="pm-name">QR Pay (VietQR)</div>
-                            <div class="pm-desc">Quét mã QR thanh toán</div>
-                        </div>
-                    </div>
-                    <div class="payment-method-card" onclick="selectPaymentMethod('card', this)">
-                        <div class="pm-icon">💳</div>
-                        <div class="pm-info">
-                            <div class="pm-name">Thẻ tín dụng / ghi nợ</div>
-                            <div class="pm-desc">Visa, Mastercard, JCB</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="paymentDetail" class="payment-detail"></div>
+        if (!currentLead) return;
+        const amount = currentLead.premiumEstimate || 0;
+        document.getElementById('paymentContent').innerHTML = `
+            <h3 style="margin-bottom:16px">Thanh toán phí bảo hiểm</h3>
+            <div style="background:var(--mb-primary-light);padding:14px 20px;border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                <span style="color:var(--mb-text-secondary)">Số tiền thanh toán</span>
+                <strong style="color:var(--mb-primary);font-size:18px">₫${fmt(amount)}</strong>
             </div>
-        `;
+            <div class="payment-methods" id="paymentMethods">
+                <div class="payment-method-card" onclick="selectPaymentMethod('bank', this)">
+                    <span style="font-size:20px">🏦</span>
+                    <div><strong>Chuyển khoản ngân hàng</strong><br><small style="color:var(--mb-muted)">Chuyển khoản qua MB Bank</small></div>
+                </div>
+                <div class="payment-method-card" onclick="selectPaymentMethod('qr', this)">
+                    <span style="font-size:20px">📱</span>
+                    <div><strong>QR Pay (VietQR)</strong><br><small style="color:var(--mb-muted)">Quét mã QR thanh toán</small></div>
+                </div>
+                <div class="payment-method-card" onclick="selectPaymentMethod('card', this)">
+                    <span style="font-size:20px">💳</span>
+                    <div><strong>Thẻ tín dụng / ghi nợ</strong><br><small style="color:var(--mb-muted)">Visa, Mastercard, JCB</small></div>
+                </div>
+            </div>
+            <div id="paymentDetail"></div>`;
     }
 
-    window.selectPaymentMethod = function (method, el) {
-        document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-
+    function selectPaymentMethod(method, el) {
+        document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+        if (el) el.classList.add('selected');
         const detail = document.getElementById('paymentDetail');
-        const premium = currentLead.premiumEstimate || 0;
-        const ref = currentLead.id + '-' + Date.now().toString(36).toUpperCase();
+        const amount = currentLead ? currentLead.premiumEstimate || 0 : 0;
+        const ref = currentLead ? currentLead.id + '-' + Date.now().toString(36).toUpperCase() : 'REF';
 
         if (method === 'bank') {
-            detail.innerHTML = `
-                <div class="payment-bank-info">
-                    <h4>Thông tin chuyển khoản</h4>
-                    <div class="bank-detail-grid">
-                        <div class="bank-item"><label>Ngân hàng</label><span>MB Bank (Ngân hàng Quân đội)</span></div>
-                        <div class="bank-item"><label>Số tài khoản</label><span style="font-weight:700;font-size:16px;color:var(--mb-primary)">0801 2345 6789</span></div>
-                        <div class="bank-item"><label>Chủ tài khoản</label><span>CÔNG TY TNHH BẢO HIỂM NHÂN THỌ MB AGEAS</span></div>
-                        <div class="bank-item"><label>Chi nhánh</label><span>Sở Giao dịch Hà Nội</span></div>
-                        <div class="bank-item"><label>Nội dung CK</label><span style="font-weight:600">${ref} ${currentLead.company}</span></div>
-                        <div class="bank-item"><label>Số tiền</label><span style="font-weight:700;color:var(--mb-success);font-size:16px">${fmt(premium)}</span></div>
-                    </div>
-                    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="processPayment('bank')">✅ Xác nhận đã chuyển khoản</button>
-                </div>
-            `;
+            detail.innerHTML = `<div style="margin-top:16px;padding:20px;background:var(--mb-surface-container);border-radius:var(--radius-sm)">
+                <h4 style="margin-bottom:12px">Thông tin chuyển khoản</h4>
+                <p><strong>Ngân hàng:</strong> MB Bank (Ngân hàng TMCP Quân đội)</p>
+                <p><strong>Số TK:</strong> 0123456789</p>
+                <p><strong>Chủ TK:</strong> CTCP BẢO HIỂM NHÂN THỌ MB</p>
+                <p><strong>Nội dung CK:</strong> ${ref}</p>
+                <p><strong>Số tiền:</strong> ₫${fmt(amount)}</p>
+                <button class="btn btn-primary" style="margin-top:16px" onclick="processPayment('bank')">Xác nhận đã chuyển khoản</button>
+            </div>`;
         } else if (method === 'qr') {
-            detail.innerHTML = `
-                <div class="payment-qr-info">
-                    <h4>Quét mã QR để thanh toán</h4>
-                    <p style="color:var(--mb-text-muted);margin-bottom:16px">Mở app ngân hàng → Quét mã QR → Xác nhận thanh toán</p>
-                    <div class="qr-wrapper">
-                        ${generateQRSVG(ref)}
-                        <div class="qr-label">VietQR — MB Bank</div>
-                    </div>
-                    <div class="bank-detail-grid" style="margin-top:16px">
-                        <div class="bank-item"><label>Mã giao dịch</label><span style="font-weight:600">${ref}</span></div>
-                        <div class="bank-item"><label>Số tiền</label><span style="font-weight:700;color:var(--mb-success)">${fmt(premium)}</span></div>
-                    </div>
-                    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="processPayment('qr')">✅ Xác nhận thanh toán QR</button>
-                </div>
-            `;
+            detail.innerHTML = `<div style="margin-top:16px;text-align:center">
+                <h4>Quét mã QR để thanh toán</h4>
+                <p style="color:var(--mb-muted);margin-bottom:16px">Mở app ngân hàng → Quét mã QR → Xác nhận thanh toán</p>
+                <div style="display:inline-block;padding:16px;background:white;border-radius:var(--radius);box-shadow:var(--shadow-md)">${generateQRSVG(ref)}</div>
+                <p style="color:var(--mb-primary);margin-top:8px;font-size:12px;font-weight:600">VIETQR — MB BANK</p>
+                <button class="btn btn-primary" style="margin-top:16px" onclick="processPayment('qr')">Xác nhận thanh toán QR</button>
+            </div>`;
         } else if (method === 'card') {
-            detail.innerHTML = `
-                <div class="payment-card-info">
-                    <h4>Nhập thông tin thẻ</h4>
-                    <div class="card-brands" style="display:flex;gap:8px;margin-bottom:16px">
-                        <span class="card-brand">VISA</span>
-                        <span class="card-brand">MC</span>
-                        <span class="card-brand">JCB</span>
-                    </div>
-                    <div class="modal-form-group"><label>Số thẻ</label><input id="cardNumber" placeholder="4111 1111 1111 1111" maxlength="19"></div>
-                    <div class="modal-form-row">
-                        <div class="modal-form-group"><label>Ngày hết hạn</label><input id="cardExpiry" placeholder="MM/YY" maxlength="5"></div>
-                        <div class="modal-form-group"><label>CVV</label><input id="cardCvv" placeholder="•••" maxlength="3" type="password"></div>
-                    </div>
-                    <div class="modal-form-group"><label>Tên trên thẻ</label><input id="cardName" placeholder="NGUYEN VAN A" style="text-transform:uppercase"></div>
-                    <div class="bank-detail-grid" style="margin-top:12px">
-                        <div class="bank-item"><label>Số tiền</label><span style="font-weight:700;color:var(--mb-success)">${fmt(premium)}</span></div>
-                    </div>
-                    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="processPayment('card')">💳 Thanh toán ${fmt(premium)}</button>
+            detail.innerHTML = `<div style="margin-top:16px;padding:20px;background:var(--mb-surface-container);border-radius:var(--radius-sm);max-width:400px">
+                <h4 style="margin-bottom:12px">Thông tin thẻ</h4>
+                <div class="form-group"><label>Số thẻ</label><input type="text" placeholder="**** **** **** ****" maxlength="19"></div>
+                <div style="display:flex;gap:12px">
+                    <div class="form-group" style="flex:1"><label>MM/YY</label><input type="text" placeholder="12/28" maxlength="5"></div>
+                    <div class="form-group" style="flex:1"><label>CVV</label><input type="text" placeholder="***" maxlength="3"></div>
                 </div>
-            `;
+                <button class="btn btn-primary btn-full" onclick="processPayment('card')">Thanh toán ₫${fmt(amount)}</button>
+            </div>`;
         }
-    };
+    }
 
-    window.processPayment = function (method) {
-        const btn = event.target;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
-
+    function processPayment(method) {
+        const detail = document.getElementById('paymentDetail');
+        detail.innerHTML = '<div style="text-align:center;padding:40px"><div class="spinner"></div><p style="margin-top:12px;color:var(--mb-muted)">Đang xử lý thanh toán...</p></div>';
         setTimeout(() => {
-            const detail = document.getElementById('paymentDetail');
-            const methodName = method === 'bank' ? 'Chuyển khoản' : method === 'qr' ? 'QR Pay' : 'Thẻ tín dụng';
-            detail.innerHTML = `
-                <div class="payment-success">
-                    <div class="success-icon">✅</div>
-                    <h3>Thanh toán thành công!</h3>
-                    <p>Phương thức: <strong>${methodName}</strong></p>
-                    <p>Số tiền: <strong style="color:var(--mb-success)">${fmt(currentLead.premiumEstimate || 0)}</strong></p>
-                    <p style="color:var(--mb-text-muted);font-size:12px;margin-top:8px">Mã GD: ${currentLead.id}-${Date.now().toString(36).toUpperCase()}</p>
-                    <p style="color:var(--mb-text-muted);font-size:12px">Thời gian: ${new Date().toLocaleString('vi-VN')}</p>
-                </div>
-            `;
+            const methodNames = { bank: 'Chuyển khoản', qr: 'QR Pay', card: 'Thẻ tín dụng' };
+            const amount = currentLead ? currentLead.premiumEstimate || 0 : 0;
+            const now = new Date();
+            detail.innerHTML = `<div style="text-align:center;padding:40px">
+                <div style="font-size:48px;color:var(--mb-success)">✅</div>
+                <h3 style="color:var(--mb-success);margin:12px 0">Thanh toán thành công!</h3>
+                <p>Phương thức: <strong>${methodNames[method]}</strong></p>
+                <p>Số tiền: <strong style="color:var(--mb-primary)">₫${fmt(amount)}</strong></p>
+                <p style="color:var(--mb-muted);font-size:12px">Mã GD: ${currentLead?.id || ''}-${Date.now().toString(36).toUpperCase()}</p>
+                <p style="color:var(--mb-muted);font-size:12px">Thời gian: ${now.toLocaleTimeString('vi-VN')} ${now.toLocaleDateString('vi-VN')}</p>
+            </div>`;
             showToast('Thanh toán thành công!', 'success');
         }, 2000);
-    };
+    }
 
     function generateQRSVG(ref) {
-        // Generate a deterministic QR-like pattern SVG
-        const size = 200;
-        const cells = 21;
-        const cellSize = size / cells;
+        const size = 200; const s = 8; const cells = Math.floor(size / s);
         let rects = '';
-
-        // Seed from ref string
         let seed = 0;
-        for (let i = 0; i < ref.length; i++) seed = ((seed << 5) - seed) + ref.charCodeAt(i);
-
-        // Corner markers (finder patterns)
-        const drawFinder = (x, y) => {
-            rects += `<rect x="${x * cellSize}" y="${y * cellSize}" width="${7 * cellSize}" height="${7 * cellSize}" fill="#1a1a2e" rx="2"/>`;
-            rects += `<rect x="${(x + 1) * cellSize}" y="${(y + 1) * cellSize}" width="${5 * cellSize}" height="${5 * cellSize}" fill="white" rx="1"/>`;
-            rects += `<rect x="${(x + 2) * cellSize}" y="${(y + 2) * cellSize}" width="${3 * cellSize}" height="${3 * cellSize}" fill="#1a1a2e" rx="1"/>`;
-        };
-        drawFinder(0, 0);
-        drawFinder(14, 0);
-        drawFinder(0, 14);
-
-        // Data cells
-        for (let r = 0; r < cells; r++) {
-            for (let c = 0; c < cells; c++) {
-                if ((r < 8 && c < 8) || (r < 8 && c > 12) || (r > 12 && c < 8)) continue;
+        for (let c of ref) seed += c.charCodeAt(0);
+        function drawFinder(x, y) {
+            rects += `<rect x="${x * s}" y="${y * s}" width="${7 * s}" height="${7 * s}" fill="black"/>`;
+            rects += `<rect x="${(x + 1) * s}" y="${(y + 1) * s}" width="${5 * s}" height="${5 * s}" fill="white"/>`;
+            rects += `<rect x="${(x + 2) * s}" y="${(y + 2) * s}" width="${3 * s}" height="${3 * s}" fill="black"/>`;
+        }
+        drawFinder(0, 0); drawFinder(cells - 7, 0); drawFinder(0, cells - 7);
+        for (let y = 0; y < cells; y++) {
+            for (let x = 0; x < cells; x++) {
+                if ((x < 8 && y < 8) || (x >= cells - 8 && y < 8) || (x < 8 && y >= cells - 8)) continue;
                 seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-                if (seed % 3 === 0) {
-                    rects += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize}" height="${cellSize}" fill="#1a1a2e"/>`;
-                }
+                if (seed % 3 === 0) rects += `<rect x="${x * s}" y="${y * s}" width="${s}" height="${s}" fill="black"/>`;
             }
         }
+        return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg"><rect width="${size}" height="${size}" fill="white"/>${rects}</svg>`;
+    }
 
-        return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="qr-svg">${rects}</svg>`;
+    // ===== DOCUMENTS (Biểu mẫu) =====
+    function renderDocuments(category) {
+        const cat = category || 'all';
+        const filtered = cat === 'all' ? MOCK_DOCUMENTS : MOCK_DOCUMENTS.filter(d => d.category === cat);
+        const tbody = document.getElementById('docsTableBody');
+        const typeIcons = { PDF: '📕', XLSX: '📊', PPTX: '📙', DOCX: '📘' };
+        tbody.innerHTML = filtered.map(d => `<tr>
+            <td>${typeIcons[d.type] || '📄'} ${d.name}</td>
+            <td><span class="doc-type-badge">${d.type}</span></td>
+            <td>${formatDate(d.updated)}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="showToast('Tải xuống: ${d.name}')">Tải xuống</button></td>
+        </tr>`).join('');
+    }
+
+    function filterDocs(cat, btn) {
+        document.querySelectorAll('.doc-cat-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderDocuments(cat);
     }
 
     // ===== MODAL =====
-    window.closeModal = function () {
+    function closeModal() {
         document.getElementById('modalOverlay').classList.add('hidden');
-    };
+    }
 
     // ===== UTILITIES =====
     function formatDate(dateStr) {
         if (!dateStr) return '—';
         const d = new Date(dateStr);
-        return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
     }
 
     function showToast(message, type) {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
-        toast.className = 'toast' + (type ? ' ' + type : '');
+        toast.className = 'toast ' + (type || '');
         toast.textContent = message;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
     }
-    window.showToast = showToast;
 
-    // Keyboard
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && document.getElementById('chatInput') === document.activeElement) return;
-        if (e.key === 'Escape') {
-            closeModal();
-            closeContractWizard();
-        }
-    });
+    // Expose globally
+    window.handleLogin = handleLogin; window.handleLogout = handleLogout;
+    window.navigateTo = navigateTo; window.toggleSidebar = toggleSidebar;
+    window.viewLead = viewLead; window.filterLeads = filterLeads; window.deleteLead = deleteLead;
+    window.openAddLead = openAddLead; window.openEditLead = openEditLead;
+    window.saveLead = saveLead; window.openStatusUpdate = openStatusUpdate;
+    window.saveStatus = saveStatus; window.switchDetailTab = switchDetailTab;
+    window.openAddInteraction = openAddInteraction; window.saveInteraction = saveInteraction;
+    window.openAddStakeholder = openAddStakeholder; window.saveStakeholder = saveStakeholder;
+    window.openAddLA = openAddLA; window.saveLA = saveLA; window.simulateExcelImport = simulateExcelImport;
+    window.toggleNeed = toggleNeed;
+    window.selectPaymentMethod = selectPaymentMethod; window.processPayment = processPayment;
+    window.renderPayment = renderPayment;
+    window.filterDocs = filterDocs; window.switchSalesView = switchSalesView;
+    window.showToast = showToast; window.closeModal = closeModal;
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 })();
