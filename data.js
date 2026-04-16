@@ -11,16 +11,17 @@ const STATUS_MAP = {
     'Từ chối': 's-rejected', 'Ngừng theo dõi': 's-inactive',
 };
 const STATUS_COLORS = {
-    'Tiếp cận': '#3B82F6', 'Đánh giá nhu cầu': '#8B5CF6',
-    'Đề xuất': '#F59E0B', 'Đàm phán': '#F97316', 'Chốt deal': '#10B981',
-    'Từ chối': '#EF4444', 'Ngừng theo dõi': '#94A3B8',
+    'Tiếp cận': '#1B3B8E', 'Đánh giá nhu cầu': '#2E55B7',
+    'Đề xuất': '#E5007D', 'Đàm phán': '#B8006A',
+    'Chốt deal': '#1B3B8E',
+    'Từ chối': '#94A3B8', 'Ngừng theo dõi': '#CBD5E1',
 };
 
 // ===== LA (Life Assured) STATUS =====
 const LA_STATUSES = ['Chưa nộp', 'Đã nộp HSYCBH', 'Đang thẩm định', 'Cần bổ sung', 'Đã duyệt', 'Phát hành HĐ'];
 const LA_STATUS_COLORS = {
-    'Chưa nộp': '#94A3B8', 'Đã nộp HSYCBH': '#3B82F6', 'Đang thẩm định': '#F59E0B',
-    'Cần bổ sung': '#F97316', 'Đã duyệt': '#8B5CF6', 'Phát hành HĐ': '#10B981',
+    'Chưa nộp': '#94A3B8', 'Đã nộp HSYCBH': '#1B3B8E', 'Đang thẩm định': '#2E55B7',
+    'Cần bổ sung': '#E5007D', 'Đã duyệt': '#4A6DC9', 'Phát hành HĐ': '#1B3B8E',
 };
 
 // ===== MOCK LEADS (Enterprises) =====

@@ -464,13 +464,13 @@ table {
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+    background: linear-gradient(135deg, #64748B 0%, #475569 100%);
     color: white;
 }
 
 .btn-danger:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.3);
+    box-shadow: 0 8px 24px rgba(100, 116, 139, 0.3);
 }
 
 /* ===== WELCOME HERO — Premium Animated ===== */
@@ -1012,23 +1012,23 @@ table {
 }
 
 .summary-icon.blue {
-    background: linear-gradient(135deg, #FCE4EC, #F8BBD0);
-    color: #C2185B;
+    background: linear-gradient(135deg, #FCE4F0, #F8BBD9);
+    color: #E5007D;
 }
 
 .summary-icon.sky {
-    background: linear-gradient(135deg, #E1F5FE, #B3E5FC);
-    color: #0277BD;
+    background: linear-gradient(135deg, #E8EBF7, #C5CDE8);
+    color: #1B3B8E;
 }
 
 .summary-icon.green {
-    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
-    color: #2E7D32;
+    background: linear-gradient(135deg, #E8EBF7, #D0D8ED);
+    color: #2E55B7;
 }
 
 .summary-icon.accent {
-    background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
-    color: #E65100;
+    background: linear-gradient(135deg, #FDE8F2, #F9C4DA);
+    color: #B8006A;
 }
 
 .summary-data {
@@ -1401,39 +1401,39 @@ table {
 }
 
 .status-badge.s-new {
-    background: var(--mb-cyan-light);
-    color: #0369A1;
+    background: var(--mb-primary-light);
+    color: var(--mb-primary);
 }
 
 .status-badge.s-new::before {
-    background: var(--mb-cyan);
+    background: var(--mb-primary);
 }
 
 .status-badge.s-contacting {
-    background: #E0F2FE;
-    color: #0E7490;
+    background: #E8EBF7;
+    color: #2E55B7;
 }
 
 .status-badge.s-contacting::before {
-    background: #06B6D4;
+    background: #2E55B7;
 }
 
 .status-badge.s-interested {
-    background: #DCFCE7;
-    color: #15803D;
+    background: #FCE4F0;
+    color: #E5007D;
 }
 
 .status-badge.s-interested::before {
-    background: var(--mb-success);
+    background: #E5007D;
 }
 
 .status-badge.s-negotiating {
-    background: #FEF3C7;
-    color: #B45309;
+    background: #FDE8F2;
+    color: #B8006A;
 }
 
 .status-badge.s-negotiating::before {
-    background: var(--mb-warning);
+    background: #B8006A;
 }
 
 .status-badge.s-pending {
@@ -1446,21 +1446,21 @@ table {
 }
 
 .status-badge.s-issued {
-    background: #D1FAE5;
-    color: #047857;
+    background: #E8EBF7;
+    color: #1B3B8E;
 }
 
 .status-badge.s-issued::before {
-    background: #059669;
+    background: #1B3B8E;
 }
 
 .status-badge.s-rejected {
-    background: #FEE2E2;
-    color: #B91C1C;
+    background: #F1F5F9;
+    color: #64748B;
 }
 
 .status-badge.s-rejected::before {
-    background: var(--mb-error);
+    background: #94A3B8;
 }
 
 .status-badge.s-inactive {
@@ -1469,7 +1469,53 @@ table {
 }
 
 .status-badge.s-inactive::before {
-    background: #94A3B8;
+    background: #CBD5E1;
+}
+
+/* Enterprise Pipeline Status Badges */
+.status-badge.s-approach {
+    background: #E8EBF7;
+    color: #1B3B8E;
+}
+
+.status-badge.s-approach::before {
+    background: #1B3B8E;
+}
+
+.status-badge.s-assess {
+    background: #E8EDF8;
+    color: #2E55B7;
+}
+
+.status-badge.s-assess::before {
+    background: #2E55B7;
+}
+
+.status-badge.s-propose {
+    background: #FCE4F0;
+    color: #E5007D;
+}
+
+.status-badge.s-propose::before {
+    background: #E5007D;
+}
+
+.status-badge.s-negotiate {
+    background: #FDE8F2;
+    color: #B8006A;
+}
+
+.status-badge.s-negotiate::before {
+    background: #B8006A;
+}
+
+.status-badge.s-closed {
+    background: #D8E0F3;
+    color: #1B3B8E;
+}
+
+.status-badge.s-closed::before {
+    background: #1B3B8E;
 }
 
 /* Action buttons */
@@ -2323,11 +2369,11 @@ table {
 }
 
 .toast.success {
-    background: linear-gradient(135deg, #16A34A, #15803D);
+    background: linear-gradient(135deg, #1B3B8E, #2E55B7);
 }
 
 .toast.error {
-    background: linear-gradient(135deg, #DC2626, #B91C1C);
+    background: linear-gradient(135deg, #B8006A, #E5007D);
 }
 
 @keyframes fadeOut {

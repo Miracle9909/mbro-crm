@@ -179,7 +179,7 @@
             <div class="info-item"><span class="info-label">NĂM THÀNH LẬP</span><span class="info-value">${currentLead.foundedYear || '—'}</span></div>
             <div class="info-item"><span class="info-label">NGUỒN</span><span class="info-value">${currentLead.source}</span></div>
             <div class="info-item"><span class="info-label">NGƯỜI PHỤ TRÁCH</span><span class="info-value">${currentLead.assignedTo || '—'}</span></div>
-            <div class="info-item"><span class="info-label">ĐÁNH GIÁ</span><span class="info-value" style="color:#F59E0B">${stars}</span></div>
+            <div class="info-item"><span class="info-label">ĐÁNH GIÁ</span><span class="info-value" style="color:#E5007D">${stars}</span></div>
             <div class="info-item"><span class="info-label">LỊCH FOLLOW-UP</span><span class="info-value" style="color:var(--mb-primary)">${currentLead.nextFollowUp ? formatDate(currentLead.nextFollowUp) : '—'}</span></div>
             <div class="info-item"><span class="info-label">PHÍ BH ƯỚC TÍNH</span><span class="info-value" style="color:var(--mb-success);font-weight:700">₫${fmt(currentLead.premiumEstimate || 0)}</span></div>
             <div class="info-item"><span class="info-label">GIÁ TRỊ HĐ</span><span class="info-value">${currentLead.contractValue ? '₫' + fmt(currentLead.contractValue) : '—'}</span></div>
