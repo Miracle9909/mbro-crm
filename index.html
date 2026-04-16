@@ -430,6 +430,7 @@
                             tác</button>
                         <button class="tab-btn" onclick="switchDetailTab('products', this)">Sản phẩm</button>
                         <button class="tab-btn" onclick="switchDetailTab('notes', this)">Ghi chú</button>
+                        <button class="tab-btn" onclick="switchDetailTab('payment', this)">💳 Thanh toán</button>
                     </div>
                     <div class="detail-body">
                         <div id="tab-info" class="tab-pane active">
@@ -451,6 +452,9 @@
                         <div id="tab-notes" class="tab-pane">
                             <textarea id="leadNotes" class="notes-textarea" placeholder="Ghi chú về khách hàng..."
                                 oninput="saveNotes()"></textarea>
+                        </div>
+                        <div id="tab-payment" class="tab-pane">
+                            <div id="paymentContent"></div>
                         </div>
                     </div>
                 </div>

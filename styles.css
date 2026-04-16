@@ -1726,6 +1726,212 @@ table {
     box-shadow: 0 0 0 3px rgba(0, 174, 239, 0.15), var(--shadow);
 }
 
+/* ===== PAYMENT MODULE ===== */
+.payment-module {
+    padding: 4px 0;
+}
+
+.payment-header h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.payment-amount {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 174, 239, 0.08);
+    border: 1px solid rgba(0, 174, 239, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.payment-amount-label {
+    color: var(--mb-text-secondary);
+    font-size: 13px;
+}
+
+.payment-amount-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--mb-primary);
+}
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.payment-method-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--mb-card);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.payment-method-card:hover {
+    border-color: rgba(0, 174, 239, 0.3);
+    background: rgba(0, 174, 239, 0.04);
+}
+
+.payment-method-card.active {
+    border-color: var(--mb-primary);
+    background: rgba(0, 174, 239, 0.08);
+    box-shadow: 0 0 12px rgba(0, 174, 239, 0.15);
+}
+
+.pm-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.pm-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--mb-text-primary);
+}
+
+.pm-desc {
+    font-size: 12px;
+    color: var(--mb-text-muted);
+    margin-top: 2px;
+}
+
+.payment-detail {
+    animation: slideUp 0.3s ease;
+}
+
+.bank-detail-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.bank-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.bank-item label {
+    color: var(--mb-text-muted);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+
+.bank-item span {
+    text-align: right;
+    font-size: 13px;
+    word-break: break-all;
+}
+
+/* QR Code */
+.qr-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.qr-svg {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.qr-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mb-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Card Brands */
+.card-brand {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--mb-text-secondary);
+    letter-spacing: 0.5px;
+}
+
+/* Processing spinner */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Payment Success */
+.payment-success {
+    text-align: center;
+    padding: 32px 16px;
+    animation: slideUp 0.5s ease;
+}
+
+.success-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.payment-success h3 {
+    color: var(--mb-success);
+    margin: 0 0 12px;
+    font-size: 20px;
+}
+
+.payment-success p {
+    margin: 4px 0;
+    font-size: 14px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ===== MODALS — Frosted Glass ===== */
 .modal-overlay {
     position: fixed;

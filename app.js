@@ -278,15 +278,27 @@
         badge.className = 'status-badge ' + STATUS_MAP[currentLead.status];
 
         const grid = document.getElementById('leadInfoGrid');
+        const stars = '★'.repeat(currentLead.rating || 0) + '☆'.repeat(5 - (currentLead.rating || 0));
+        const starsColor = currentLead.rating >= 4 ? 'var(--mb-warning)' : currentLead.rating >= 2 ? 'var(--mb-text-secondary)' : 'var(--mb-text-muted)';
         grid.innerHTML = `
             <div class="info-item"><label>Mã KH</label><span>${currentLead.id}</span></div>
             <div class="info-item"><label>Mã số thuế</label><span>${currentLead.taxCode}</span></div>
             <div class="info-item"><label>Người đại diện</label><span>${currentLead.representative}</span></div>
+            <div class="info-item"><label>Chức vụ</label><span>${currentLead.position || '—'}</span></div>
             <div class="info-item"><label>Điện thoại</label><span>${currentLead.phone}</span></div>
+            <div class="info-item"><label>Liên hệ phụ</label><span>${currentLead.phone2 || '—'}</span></div>
             <div class="info-item"><label>Email</label><span>${currentLead.email}</span></div>
+            <div class="info-item"><label>Website</label><span>${currentLead.website ? '<a href="https://' + currentLead.website + '" target="_blank" style="color:var(--mb-primary)">' + currentLead.website + '</a>' : '—'}</span></div>
             <div class="info-item"><label>Ngành nghề</label><span>${currentLead.industry}</span></div>
             <div class="info-item"><label>Số nhân viên</label><span>${currentLead.employees}</span></div>
+            <div class="info-item"><label>Doanh thu/năm</label><span>${currentLead.revenue || '—'}</span></div>
+            <div class="info-item"><label>Năm thành lập</label><span>${currentLead.foundedYear || '—'}</span></div>
             <div class="info-item"><label>Nguồn</label><span>${currentLead.source}</span></div>
+            <div class="info-item"><label>Người phụ trách</label><span>${currentLead.assignedTo || '—'}</span></div>
+            <div class="info-item"><label>Đánh giá</label><span style="color:${starsColor};font-size:16px;letter-spacing:2px">${stars}</span></div>
+            <div class="info-item"><label>Lịch follow-up</label><span style="${currentLead.nextFollowUp ? 'color:var(--mb-primary);font-weight:600' : ''}">${currentLead.nextFollowUp ? formatDate(currentLead.nextFollowUp) : 'Chưa hẹn'}</span></div>
+            <div class="info-item"><label>Phí BH ước tính</label><span style="color:var(--mb-success);font-weight:700">${currentLead.premiumEstimate ? fmt(currentLead.premiumEstimate) : '—'}</span></div>
+            <div class="info-item"><label>Giá trị HĐ</label><span style="color:var(--mb-warning);font-weight:700">${currentLead.contractValue ? fmt(currentLead.contractValue) : '—'}</span></div>
             <div class="info-item" style="grid-column:1/-1"><label>Địa chỉ</label><span>${currentLead.address}</span></div>
         `;
 
@@ -337,6 +349,7 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('tab-' + tab).classList.add('active');
         btn.classList.add('active');
+        if (tab === 'payment') renderPayment();
     };
 
     window.saveNotes = function () {
@@ -361,22 +374,43 @@
 
     function getLeadFormHTML(data) {
         const d = data || {};
+        const revOpts = ['Dưới 10 tỷ', '10-20 tỷ', '20-50 tỷ', '50-100 tỷ', '100-200 tỷ', '200-500 tỷ', '500-1000 tỷ', 'Trên 1000 tỷ'];
         return `
-            <form onsubmit="return saveLead(event, '${d.id || ''}')">
+            <form onsubmit="return saveLead(event, '${d.id || ''}')" style="max-height:70vh;overflow-y:auto;padding-right:8px">
+                <h4 style="margin:0 0 12px;color:var(--mb-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.5px">Thông tin doanh nghiệp</h4>
                 <div class="modal-form-row">
                     <div class="modal-form-group"><label>Tên doanh nghiệp *</label><input id="fCompany" value="${d.company || ''}" required></div>
                     <div class="modal-form-group"><label>Mã số thuế</label><input id="fTaxCode" value="${d.taxCode || ''}"></div>
                 </div>
                 <div class="modal-form-row">
+                    <div class="modal-form-group"><label>Ngành nghề</label><input id="fIndustry" value="${d.industry || ''}"></div>
+                    <div class="modal-form-group"><label>Số nhân viên</label><input type="number" id="fEmployees" value="${d.employees || ''}"></div>
+                </div>
+                <div class="modal-form-row">
+                    <div class="modal-form-group"><label>Doanh thu/năm</label>
+                        <select id="fRevenue">
+                            <option value="">— Chọn —</option>
+                            ${revOpts.map(r => '<option' + (d.revenue === r ? ' selected' : '') + '>' + r + '</option>').join('')}
+                        </select>
+                    </div>
+                    <div class="modal-form-group"><label>Năm thành lập</label><input type="number" id="fFoundedYear" value="${d.foundedYear || ''}" min="1900" max="2026"></div>
+                </div>
+                <div class="modal-form-row">
+                    <div class="modal-form-group"><label>Website</label><input id="fWebsite" value="${d.website || ''}" placeholder="example.com.vn"></div>
+                    <div class="modal-form-group"><label>Địa chỉ</label><input id="fAddress" value="${d.address || ''}"></div>
+                </div>
+
+                <h4 style="margin:16px 0 12px;color:var(--mb-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.5px">Thông tin liên hệ</h4>
+                <div class="modal-form-row">
                     <div class="modal-form-group"><label>Người đại diện *</label><input id="fRep" value="${d.representative || ''}" required></div>
+                    <div class="modal-form-group"><label>Chức vụ</label><input id="fPosition" value="${d.position || ''}" placeholder="VD: Giám đốc nhân sự"></div>
+                </div>
+                <div class="modal-form-row">
                     <div class="modal-form-group"><label>Điện thoại *</label><input id="fPhone" value="${d.phone || ''}" required></div>
+                    <div class="modal-form-group"><label>Liên hệ phụ</label><input id="fPhone2" value="${d.phone2 || ''}" placeholder="SĐT phụ hoặc bàn"></div>
                 </div>
                 <div class="modal-form-row">
                     <div class="modal-form-group"><label>Email</label><input type="email" id="fEmail" value="${d.email || ''}"></div>
-                    <div class="modal-form-group"><label>Ngành nghề</label><input id="fIndustry" value="${d.industry || ''}"></div>
-                </div>
-                <div class="modal-form-row">
-                    <div class="modal-form-group"><label>Số nhân viên</label><input type="number" id="fEmployees" value="${d.employees || ''}"></div>
                     <div class="modal-form-group"><label>Nguồn</label>
                         <select id="fSource">
                             <option ${d.source === 'Website' ? 'selected' : ''}>Website</option>
@@ -389,8 +423,29 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-form-group"><label>Địa chỉ</label><input id="fAddress" value="${d.address || ''}"></div>
-                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px">
+
+                <h4 style="margin:16px 0 12px;color:var(--mb-text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:.5px">Quản lý & Đánh giá</h4>
+                <div class="modal-form-row">
+                    <div class="modal-form-group"><label>Người phụ trách</label>
+                        <select id="fAssignedTo">
+                            <option value="">— Chọn —</option>
+                            <option ${d.assignedTo === 'Nguyễn Hải Đăng' ? 'selected' : ''}>Nguyễn Hải Đăng</option>
+                            <option ${d.assignedTo === 'Lê Thị Hương' ? 'selected' : ''}>Lê Thị Hương</option>
+                            <option ${d.assignedTo === 'Trần Minh Quân' ? 'selected' : ''}>Trần Minh Quân</option>
+                        </select>
+                    </div>
+                    <div class="modal-form-group"><label>Đánh giá (1-5)</label>
+                        <select id="fRating">
+                            ${[1, 2, 3, 4, 5].map(r => '<option value="' + r + '"' + (d.rating == r ? ' selected' : '') + '>' + '★'.repeat(r) + ' (' + r + ')</option>').join('')}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-form-row">
+                    <div class="modal-form-group"><label>Lịch follow-up</label><input type="date" id="fNextFollowUp" value="${d.nextFollowUp || ''}"></div>
+                    <div class="modal-form-group"><label>Phí BH ước tính (VNĐ)</label><input type="number" id="fPremiumEstimate" value="${d.premiumEstimate || ''}" step="1000000"></div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:16px">
                     <button type="button" class="btn btn-ghost" onclick="closeModal()">Hủy</button>
                     <button type="submit" class="btn btn-primary">${d.id ? 'Cập nhật' : 'Thêm mới'}</button>
                 </div>
@@ -404,12 +459,21 @@
             company: document.getElementById('fCompany').value,
             taxCode: document.getElementById('fTaxCode').value,
             representative: document.getElementById('fRep').value,
+            position: document.getElementById('fPosition').value,
             phone: document.getElementById('fPhone').value,
+            phone2: document.getElementById('fPhone2').value,
             email: document.getElementById('fEmail').value,
             industry: document.getElementById('fIndustry').value,
             employees: parseInt(document.getElementById('fEmployees').value) || 0,
+            revenue: document.getElementById('fRevenue').value,
+            foundedYear: parseInt(document.getElementById('fFoundedYear').value) || '',
+            website: document.getElementById('fWebsite').value,
             source: document.getElementById('fSource').value,
             address: document.getElementById('fAddress').value,
+            assignedTo: document.getElementById('fAssignedTo').value,
+            rating: parseInt(document.getElementById('fRating').value) || 3,
+            nextFollowUp: document.getElementById('fNextFollowUp').value,
+            premiumEstimate: parseInt(document.getElementById('fPremiumEstimate').value) || 0,
         };
 
         if (editId) {
@@ -803,6 +867,173 @@
         btn.classList.add('active');
         renderDocuments(cat);
     };
+
+    // ===== PAYMENT MODULE =====
+    function renderPayment() {
+        const container = document.getElementById('paymentContent');
+        if (!currentLead || !container) return;
+
+        const premium = currentLead.premiumEstimate || 0;
+        const amountStr = fmt(premium);
+
+        container.innerHTML = `
+            <div class="payment-module">
+                <div class="payment-header">
+                    <h3>Thanh toán phí bảo hiểm</h3>
+                    <div class="payment-amount">
+                        <span class="payment-amount-label">Số tiền thanh toán</span>
+                        <span class="payment-amount-value">${amountStr}</span>
+                    </div>
+                </div>
+
+                <div class="payment-methods">
+                    <div class="payment-method-card" onclick="selectPaymentMethod('bank', this)">
+                        <div class="pm-icon">🏦</div>
+                        <div class="pm-info">
+                            <div class="pm-name">Chuyển khoản ngân hàng</div>
+                            <div class="pm-desc">Chuyển khoản qua MB Bank</div>
+                        </div>
+                    </div>
+                    <div class="payment-method-card" onclick="selectPaymentMethod('qr', this)">
+                        <div class="pm-icon">📱</div>
+                        <div class="pm-info">
+                            <div class="pm-name">QR Pay (VietQR)</div>
+                            <div class="pm-desc">Quét mã QR thanh toán</div>
+                        </div>
+                    </div>
+                    <div class="payment-method-card" onclick="selectPaymentMethod('card', this)">
+                        <div class="pm-icon">💳</div>
+                        <div class="pm-info">
+                            <div class="pm-name">Thẻ tín dụng / ghi nợ</div>
+                            <div class="pm-desc">Visa, Mastercard, JCB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="paymentDetail" class="payment-detail"></div>
+            </div>
+        `;
+    }
+
+    window.selectPaymentMethod = function (method, el) {
+        document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+
+        const detail = document.getElementById('paymentDetail');
+        const premium = currentLead.premiumEstimate || 0;
+        const ref = currentLead.id + '-' + Date.now().toString(36).toUpperCase();
+
+        if (method === 'bank') {
+            detail.innerHTML = `
+                <div class="payment-bank-info">
+                    <h4>Thông tin chuyển khoản</h4>
+                    <div class="bank-detail-grid">
+                        <div class="bank-item"><label>Ngân hàng</label><span>MB Bank (Ngân hàng Quân đội)</span></div>
+                        <div class="bank-item"><label>Số tài khoản</label><span style="font-weight:700;font-size:16px;color:var(--mb-primary)">0801 2345 6789</span></div>
+                        <div class="bank-item"><label>Chủ tài khoản</label><span>CÔNG TY TNHH BẢO HIỂM NHÂN THỌ MB AGEAS</span></div>
+                        <div class="bank-item"><label>Chi nhánh</label><span>Sở Giao dịch Hà Nội</span></div>
+                        <div class="bank-item"><label>Nội dung CK</label><span style="font-weight:600">${ref} ${currentLead.company}</span></div>
+                        <div class="bank-item"><label>Số tiền</label><span style="font-weight:700;color:var(--mb-success);font-size:16px">${fmt(premium)}</span></div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="processPayment('bank')">✅ Xác nhận đã chuyển khoản</button>
+                </div>
+            `;
+        } else if (method === 'qr') {
+            detail.innerHTML = `
+                <div class="payment-qr-info">
+                    <h4>Quét mã QR để thanh toán</h4>
+                    <p style="color:var(--mb-text-muted);margin-bottom:16px">Mở app ngân hàng → Quét mã QR → Xác nhận thanh toán</p>
+                    <div class="qr-wrapper">
+                        ${generateQRSVG(ref)}
+                        <div class="qr-label">VietQR — MB Bank</div>
+                    </div>
+                    <div class="bank-detail-grid" style="margin-top:16px">
+                        <div class="bank-item"><label>Mã giao dịch</label><span style="font-weight:600">${ref}</span></div>
+                        <div class="bank-item"><label>Số tiền</label><span style="font-weight:700;color:var(--mb-success)">${fmt(premium)}</span></div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="processPayment('qr')">✅ Xác nhận thanh toán QR</button>
+                </div>
+            `;
+        } else if (method === 'card') {
+            detail.innerHTML = `
+                <div class="payment-card-info">
+                    <h4>Nhập thông tin thẻ</h4>
+                    <div class="card-brands" style="display:flex;gap:8px;margin-bottom:16px">
+                        <span class="card-brand">VISA</span>
+                        <span class="card-brand">MC</span>
+                        <span class="card-brand">JCB</span>
+                    </div>
+                    <div class="modal-form-group"><label>Số thẻ</label><input id="cardNumber" placeholder="4111 1111 1111 1111" maxlength="19"></div>
+                    <div class="modal-form-row">
+                        <div class="modal-form-group"><label>Ngày hết hạn</label><input id="cardExpiry" placeholder="MM/YY" maxlength="5"></div>
+                        <div class="modal-form-group"><label>CVV</label><input id="cardCvv" placeholder="•••" maxlength="3" type="password"></div>
+                    </div>
+                    <div class="modal-form-group"><label>Tên trên thẻ</label><input id="cardName" placeholder="NGUYEN VAN A" style="text-transform:uppercase"></div>
+                    <div class="bank-detail-grid" style="margin-top:12px">
+                        <div class="bank-item"><label>Số tiền</label><span style="font-weight:700;color:var(--mb-success)">${fmt(premium)}</span></div>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;margin-top:16px" onclick="processPayment('card')">💳 Thanh toán ${fmt(premium)}</button>
+                </div>
+            `;
+        }
+    };
+
+    window.processPayment = function (method) {
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+
+        setTimeout(() => {
+            const detail = document.getElementById('paymentDetail');
+            const methodName = method === 'bank' ? 'Chuyển khoản' : method === 'qr' ? 'QR Pay' : 'Thẻ tín dụng';
+            detail.innerHTML = `
+                <div class="payment-success">
+                    <div class="success-icon">✅</div>
+                    <h3>Thanh toán thành công!</h3>
+                    <p>Phương thức: <strong>${methodName}</strong></p>
+                    <p>Số tiền: <strong style="color:var(--mb-success)">${fmt(currentLead.premiumEstimate || 0)}</strong></p>
+                    <p style="color:var(--mb-text-muted);font-size:12px;margin-top:8px">Mã GD: ${currentLead.id}-${Date.now().toString(36).toUpperCase()}</p>
+                    <p style="color:var(--mb-text-muted);font-size:12px">Thời gian: ${new Date().toLocaleString('vi-VN')}</p>
+                </div>
+            `;
+            showToast('Thanh toán thành công!', 'success');
+        }, 2000);
+    };
+
+    function generateQRSVG(ref) {
+        // Generate a deterministic QR-like pattern SVG
+        const size = 200;
+        const cells = 21;
+        const cellSize = size / cells;
+        let rects = '';
+
+        // Seed from ref string
+        let seed = 0;
+        for (let i = 0; i < ref.length; i++) seed = ((seed << 5) - seed) + ref.charCodeAt(i);
+
+        // Corner markers (finder patterns)
+        const drawFinder = (x, y) => {
+            rects += `<rect x="${x * cellSize}" y="${y * cellSize}" width="${7 * cellSize}" height="${7 * cellSize}" fill="#1a1a2e" rx="2"/>`;
+            rects += `<rect x="${(x + 1) * cellSize}" y="${(y + 1) * cellSize}" width="${5 * cellSize}" height="${5 * cellSize}" fill="white" rx="1"/>`;
+            rects += `<rect x="${(x + 2) * cellSize}" y="${(y + 2) * cellSize}" width="${3 * cellSize}" height="${3 * cellSize}" fill="#1a1a2e" rx="1"/>`;
+        };
+        drawFinder(0, 0);
+        drawFinder(14, 0);
+        drawFinder(0, 14);
+
+        // Data cells
+        for (let r = 0; r < cells; r++) {
+            for (let c = 0; c < cells; c++) {
+                if ((r < 8 && c < 8) || (r < 8 && c > 12) || (r > 12 && c < 8)) continue;
+                seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+                if (seed % 3 === 0) {
+                    rects += `<rect x="${c * cellSize}" y="${r * cellSize}" width="${cellSize}" height="${cellSize}" fill="#1a1a2e"/>`;
+                }
+            }
+        }
+
+        return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" class="qr-svg">${rects}</svg>`;
+    }
 
     // ===== MODAL =====
     window.closeModal = function () {
